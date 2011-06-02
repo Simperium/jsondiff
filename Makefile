@@ -6,7 +6,7 @@ MINIFIER_JAR = ~/dev/yuicompressor-2.4.2/build/yuicompressor-2.4.2.jar
 
 JD_VER = $(shell cat version.txt)
 JD_JS = ${DIST_DIR}/jsondiff-${JD_VER}.js
-JD_PY = ${DIST_DIR}/jsondiff-${JD_VER}.py
+JD_PY = ${DIST_DIR}/python/jsondiff/__init__.py
 
 all: ${DIST_DIR} ${JD_PY} ${JD_JS} min
 	@@echo "Done."
@@ -15,6 +15,7 @@ ${DIST_DIR}:
 	@@mkdir -p ${DIST_DIR}
 
 ${JD_PY}: ${SRC_DIR}/jsondiff.py
+	@@mkdir -p ${DIST_DIR}/python/jsondiff
 	@@cp ${SRC_DIR}/jsondiff.py ${JD_PY}
 
 ${JD_JS}: ${SRC_DIR}/jsondiff.coffee
