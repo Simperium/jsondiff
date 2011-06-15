@@ -1,0 +1,10 @@
+*~
+.#*
+## the next line needs to start with a backslash to avoid looking like
+## a comment
+\#*#
+*.pyc
+*.pyo
+_trial_temp
+.*.swp
+*.DS_Store*
