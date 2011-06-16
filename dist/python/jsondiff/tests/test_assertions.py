@@ -3,6 +3,7 @@ import simplejson
 import os.path
 
 from jsondiff import diff
+from jsondiff import applydiff
 from jsondiff import equals
 
 
@@ -14,9 +15,10 @@ class AssertionsTests(unittest.TestCase):
         assertions = simplejson.load(open(os.path.join(
             os.path.dirname(__file__), '../../../../src/test/assertions.json')))
 
-        for method, args, expected, description in assertions:
+        def run_assertion(method, args, expected, description):
             method = {
                 'diff': diff,
+                'applydiff': applydiff,
             }[method]
             got = method(*args)
             if not equals(got, expected):
@@ -25,8 +27,15 @@ class AssertionsTests(unittest.TestCase):
                 print
                 print "\texpected", simplejson.dumps(expected)
                 print "\tgot", simplejson.dumps(got)
-
             self.assertTrue(equals(got, expected))
+
+        for method, args, expected, description in assertions:
+            run_assertion(method, args, expected, description)
+            if method == 'diff':
+                # generate applydiff tests from diff tests
+                original, target = args
+                run_assertion(
+                    'applydiff', [original, expected], target, description)
 
 
 if __name__ == '__main__':
