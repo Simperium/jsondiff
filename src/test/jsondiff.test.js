@@ -1,6 +1,16 @@
-var jd = new jsondiff();
-test('listdiff', function() {  
-    var got = jd.diff([1], [1,4]);
-    var want = {'o': 'L', 'v': {1: {'o':'+', 'v':4}}};
-    ok(jd.equals(want, got), 'append list item');
+$(function(){
+    var jd = new jsondiff();
+    var methodmap = {
+        diff: jd.diff
+    }
+
+    $.getJSON('assertions.json', function(assertions) {
+        test('jsondiff', function() {  
+            for (var i=0; i<assertions.length; i++) {
+                var method = methodmap[assertions[i][0]];
+                var want = method.apply(jd, assertions[i][1]);
+                ok(jd.equals(want, assertions[i][2]), assertions[i][3]);
+            }
+        });
+    });
 });
