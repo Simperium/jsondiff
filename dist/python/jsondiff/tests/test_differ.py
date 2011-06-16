@@ -87,5 +87,11 @@ class DifferTests(unittest.TestCase):
         b = {'blah':{'hi':'there'}, 'num':-10, 'new':{'list':['a', 'b', 'c']}}
         self.assertTrue(objequals(b, applyobjdiff2(a, objdiff2(a, b))))
 
+    def test_applydiff(self):
+        a = [1]
+        b = [1,4]
+        self.assertTrue(equals(b, applydiff(a, diff(a, b))))
+
+
 if __name__ == '__main__':
     unittest.main()
