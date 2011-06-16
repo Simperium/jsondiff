@@ -308,12 +308,3 @@ def applydiff(a, ops):
 class differ:
     def __init__(self):
         pass
-
-
-
-class AssertionsTests(unittest.TestCase):
-    """
-    process the list of common assertions all clients should implement
-    """
-    def test_assertions(self):
-        print __file__
