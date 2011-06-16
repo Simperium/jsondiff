@@ -11,4 +11,4 @@ Javascript:
 
 Python:
 
-    nosetests dist/python/jsondiffer
+    nosetests dist/python/jsondiff
