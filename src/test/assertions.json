@@ -2,5 +2,10 @@
     ["diff", [[1], [1,4]], {"o": "L", "v": {"1": {"o":"+", "v":4}}}, "list, append"],
     ["diff", [[1,4], [1]], {"o": "L", "v": {"1": {"o":"-"}}}, "list, remove last"],
 
-    ["diff", [{"a":"b"}, {"a":"c"}], {"o": "O", "v": {"a": {"o": "d", "v": "-1\t+c"}}}, "object, change key"]
+    ["diff", [{"a":"b"}, {"a":"c"}], {"o": "O", "v": {"a": {"o": "d", "v": "-1\t+c"}}},
+        "object, change key string"],
+    ["diff", [{"a":"b"}, {"a":7}], {"o": "O", "v": {"a": {"o": "r", "v": 7}}},
+        "object, change key string to int"],
+    ["diff", [{"a":"b"}, {"a":"b","e":"d"}], {"o": "O", "v": {"e": {"o": "+", "v": "d"}}},
+        "object, add key"]
 ]
