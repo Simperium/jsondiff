@@ -1,17 +1,18 @@
 [
-    ["diff", [[1], [1,4]], {"o": "L", "v": {"1": {"o":"+", "v":4}}}, "list, append"],
-    ["diff", [[1,4], [1]], {"o": "L", "v": {"1": {"o":"-"}}}, "list, remove last"],
-    ["diff",
+    ["diff", "list, append",
+        [[1], [1,4]], {"o": "L", "v": {"1": {"o":"+", "v":4}}}],
+    ["diff", "list, remove last",
+        [[1,4], [1]], {"o": "L", "v": {"1": {"o":"-"}}}],
+    ["diff", "list, remove first, insert into middle, append",
         [[1,2,3,4], [2,6,3,4,5]],
-        {"o": "L", "v": {"1": {"o": "I", "v": 4}, "0": {"o": "I", "v": 1}, "4": {"o": "+", "v": 5}}},
-        "list, remove first, insert into middle, append"],
+        {"o": "L", "v": {"1": {"o": "I", "v": 4}, "0": {"o": "I", "v": 1}, "4": {"o": "+", "v": 5}}}],
 
-    ["diff", [{"a":"b"}, {"a":"c"}], {"o": "O", "v": {"a": {"o": "d", "v": "-1\t+c"}}},
-        "object, change key string"],
-    ["diff", [{"a":"b"}, {"a":7}], {"o": "O", "v": {"a": {"o": "r", "v": 7}}},
-        "object, change key string to int"],
-    ["diff", [{"a":"b"}, {"a":"b","e":"d"}], {"o": "O", "v": {"e": {"o": "+", "v": "d"}}},
-        "object, add key"],
-    ["diff", [{"a":"b","e":"d"}, {"a":"b"}], {"o": "O", "v": {"e": {"o": "-"}}},
-        "object, remove key"]
+    ["diff", "object, change key string",
+        [{"a":"b"}, {"a":"c"}], {"o": "O", "v": {"a": {"o": "d", "v": "-1\t+c"}}}],
+    ["diff", "object, change key string to int",
+        [{"a":"b"}, {"a":7}], {"o": "O", "v": {"a": {"o": "r", "v": 7}}}],
+    ["diff", "object, add key",
+        [{"a":"b"}, {"a":"b","e":"d"}], {"o": "O", "v": {"e": {"o": "+", "v": "d"}}}],
+    ["diff", "object, remove key",
+        [{"a":"b","e":"d"}, {"a":"b"}], {"o": "O", "v": {"e": {"o": "-"}}}]
 ]

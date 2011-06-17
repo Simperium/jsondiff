@@ -1,7 +1,7 @@
 $(function(){
     var jd = new jsondiff();
 
-    function run_assertion(method, args, expected, description) {
+    function run_assertion(method, description, args, expected) {
         var description = method + ': ' + description;
         switch(method) {
             case 'diff':
@@ -26,9 +26,9 @@ $(function(){
                 //
                 // generate applydiff tests from diff tests
                 if(assertions[i][0] == 'diff') {
-                    var original = assertions[i][1][0];
-                    var target = assertions[i][1][1];
-                    run_assertion('applydiff', [original, assertions[i][2]['v']], target, assertions[i][3]);
+                    var original = assertions[i][2][0];
+                    var target = assertions[i][2][1];
+                    run_assertion('applydiff', assertions[i][1], [original, assertions[i][3]['v']], target);
                 }
             }
         });

@@ -15,7 +15,7 @@ class AssertionsTests(unittest.TestCase):
         assertions = simplejson.load(open(os.path.join(
             os.path.dirname(__file__), '../../../../src/test/assertions.json')))
 
-        def run_assertion(method, args, expected, description):
+        def run_assertion(method, description, args, expected):
             description = method + ': ' + description
             method = {
                 'diff': diff,
@@ -31,13 +31,13 @@ class AssertionsTests(unittest.TestCase):
                 print "\tgot", simplejson.dumps(got)
             self.assertTrue(equals(got, expected))
 
-        for method, args, expected, description in assertions:
-            run_assertion(method, args, expected, description)
+        for method, description, args, expected, in assertions:
+            run_assertion(method, description, args, expected)
             if method == 'diff':
                 # generate applydiff tests from diff tests
                 original, target = args
                 run_assertion(
-                    'applydiff', [original, expected['v']], target, description)
+                    'applydiff', description, [original, expected['v']], target)
 
 
 if __name__ == '__main__':
