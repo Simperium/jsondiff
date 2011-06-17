@@ -6,7 +6,7 @@ $(function(){
     }
 
     function run_assertion(method, args, expected, description) {
-        var description = method + ':' + description;
+        var description = method + ': ' + description;
         var method = methodmap[method];
         var want = method.apply(jd, args);
         ok(jd.equals(want, expected), description);
@@ -21,7 +21,7 @@ $(function(){
                 if(assertions[i][0] == 'diff') {
                     var original = assertions[i][1][0];
                     var target = assertions[i][1][1];
-                    run_assertion('applydiff', [original, assertions[i][2]], target, assertions[i][3]);
+                    run_assertion('applydiff', [original, assertions[i][2]['v']], target, assertions[i][3]);
                 }
             }
         });
