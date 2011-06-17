@@ -178,6 +178,8 @@ def applyobjdiff2(a, c):
             del ac[k]
         elif o['o'] == '+':
             ac[k] = o['v']
+        elif o['o'] == 'r':
+            ac[k] = o['v']
         elif o['o'] == 'I':
             ac[k] += o['v']
         elif o['o'] == 'L':
