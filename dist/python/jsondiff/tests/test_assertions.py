@@ -5,6 +5,7 @@ import os.path
 from jsondiff import diff
 from jsondiff import applydiff
 from jsondiff import equals
+from jsondiff import transform_object
 
 
 class AssertionsTests(unittest.TestCase):
@@ -38,6 +39,18 @@ class AssertionsTests(unittest.TestCase):
                 original, target = args
                 run_assertion(
                     'applydiff', description, [original, expected['v']], target)
+
+
+    def test_transform(self):
+        """(andy) just trying to work out transforms. i don't think i've
+        quite got it yet, fred just committing this to have something to chat
+        through with you.
+        """
+        # odiff = {"a": {"o": "r", "v": 7}}
+        odiff = {"e": {"o": "+", "v": "y"}}
+        o = {"a":"b"}
+        diff = {"e": {"o": "+", "v": "d"}}
+        print "FROAR", transform_object(diff, odiff, o)
 
 
 if __name__ == '__main__':
