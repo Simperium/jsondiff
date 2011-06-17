@@ -16,6 +16,7 @@ class AssertionsTests(unittest.TestCase):
             os.path.dirname(__file__), '../../../../src/test/assertions.json')))
 
         def run_assertion(method, args, expected, description):
+            description = method + ': ' + description
             method = {
                 'diff': diff,
                 'applydiff': applydiff,
@@ -25,6 +26,7 @@ class AssertionsTests(unittest.TestCase):
                 print
                 print "Exception coming..."
                 print
+                print "\tdescription", description
                 print "\texpected", simplejson.dumps(expected)
                 print "\tgot", simplejson.dumps(got)
             self.assertTrue(equals(got, expected))
@@ -35,7 +37,7 @@ class AssertionsTests(unittest.TestCase):
                 # generate applydiff tests from diff tests
                 original, target = args
                 run_assertion(
-                    'applydiff', [original, expected], target, description)
+                    'applydiff', [original, expected['v']], target, description)
 
 
 if __name__ == '__main__':
