@@ -236,19 +236,17 @@
       for (_i = 0, _len = indexes.length; _i < _len; _i++) {
         index = indexes[_i];
         op = diffs[index];
-        shift = [
-          (function() {
-            var _j, _len2, _results;
-            _results = [];
-            for (_j = 0, _len2 = deleted.length; _j < _len2; _j++) {
-              x = deleted[_j];
-              if (x <= index) {
-                _results.push(x);
-              }
+        shift = ((function() {
+          var _j, _len2, _results;
+          _results = [];
+          for (_j = 0, _len2 = deleted.length; _j < _len2; _j++) {
+            x = deleted[_j];
+            if (x <= index) {
+              _results.push(x);
             }
-            return _results;
-          })()
-        ].length;
+          }
+          return _results;
+        })()).length;
         s_index = index - shift;
         switch (op.o) {
           case '+':

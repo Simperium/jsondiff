@@ -321,7 +321,7 @@ class jsondiff
 
       # Resulting index may be shifted depending if there were delete
       # operations before the current index.
-      shift = [x for x in deleted when x <= index].length
+      shift = (x for x in deleted when x <= index).length
       s_index = index - shift
 
       switch op.o
