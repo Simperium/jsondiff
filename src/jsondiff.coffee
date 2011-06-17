@@ -331,6 +331,7 @@ class jsondiff
         # Delete value at index
         when '-'
           patched[s_index..s_index] = []
+          deleted[deleted.length] = s_index
         # Replace value at index
         when 'r'
           patched[s_index] = op.v

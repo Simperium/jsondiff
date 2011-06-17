@@ -254,6 +254,7 @@
             break;
           case '-':
             [].splice.apply(patched, [s_index, s_index - s_index + 1].concat(_ref2 = [])), _ref2;
+            deleted[deleted.length] = s_index;
             break;
           case 'r':
             patched[s_index] = op.v;
