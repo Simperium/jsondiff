@@ -1,13 +1,20 @@
 $(function(){
     var jd = new jsondiff();
-    var methodmap = {
-        diff: jd.diff,
-        applydiff: jd.apply_object_diff
-    }
 
     function run_assertion(method, args, expected, description) {
         var description = method + ': ' + description;
-        var method = methodmap[method];
+        switch(method) {
+            case 'diff':
+                var method = jd.diff
+                break;
+            case 'applydiff':
+                if (jd.typeOf(args[0]) == 'array')
+                    var method = jd.apply_list_diff;
+                else if (jd.typeOf(args[0]) == 'object')
+                    var method = jd.apply_object_diff;
+                break;
+        }
+
         var want = method.apply(jd, args);
         ok(jd.equals(want, expected), description);
     }
