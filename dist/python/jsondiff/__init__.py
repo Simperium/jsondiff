@@ -223,12 +223,18 @@ def transform_object(a, b, s):
     for k, op in a.iteritems():
         logging.info('transform_object(): testing k=[%s]' % k)
         if k in b:
+            sk = None
             if type(s) == list:
-                sk = s[int(k)]
+                if len(s) > int(k):
+                    sk = s[int(k)]
             else:
-                sk = s[k]
+                if k in s:
+                    sk = s[k]
             if op['o'] == '+' and b[k]['o'] == '+':
-                ac[k] = diff(b[k]['v'], op['v'])
+                if equals(b[k]['v'], op['v']):
+                    del ac[k]
+                else:
+                    ac[k] = diff(b[k]['v'], op['v'])
             elif op['o'] == '-' and b[k]['o'] == '-':
                 del ac[k]
             elif b[k]['o'] == '-' and op['o'] in ['O', 'L', 'I', 'd']:
