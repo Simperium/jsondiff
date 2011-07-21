@@ -8,3 +8,5 @@
 _trial_temp
 .*.swp
 *.DS_Store*
+diffmatchpatch
+simplejson
