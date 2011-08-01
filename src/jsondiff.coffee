@@ -115,14 +115,14 @@ class jsondiff
   #### Helper functions
 
   # Return the number of entries in an object
-  entries: (obj) ->
+  entries: (obj) =>
     n = 0
     for own key, value of obj
       n++
     n
 
   # Get the type properly, javascripts `typeof` is broken, see [http://javascript.crockford.com/remedial.html]().
-  typeOf: (value) ->
+  typeOf: (value) =>
     s = typeof value
     if s is 'object'
       if value
@@ -135,7 +135,7 @@ class jsondiff
     return s
 
   # Return a deep copy of the object
-  deepCopy: (obj) ->
+  deepCopy: (obj) =>
     if Object::toString.call(obj) is '[object Array]'
       out = []
       for i in [0...obj.length]
@@ -149,7 +149,7 @@ class jsondiff
     return obj
 
   # Deep equals comparison
-  equals: (a, b) ->
+  equals: (a, b) =>
     typea = @typeOf a
     if typea != @typeOf b
       return false
@@ -161,7 +161,7 @@ class jsondiff
       return a is b
 
   # Given two arrays, returns true if all elements of array are equal
-  list_equals: (a, b) ->
+  list_equals: (a, b) =>
     alength = a.length
     if alength != b.length
       return false
@@ -171,7 +171,7 @@ class jsondiff
     return true
 
   # Given two objects, returns true if both objects have same set of keys and values
-  object_equals: (a, b) ->
+  object_equals: (a, b) =>
     for own key of a
       if not (key of b)
         return false
@@ -183,7 +183,7 @@ class jsondiff
     return true
 
   # Returns the length of common elements at beginning of two arrays
-  _common_prefix: (a, b) ->
+  _common_prefix: (a, b) =>
     minlen = Math.min a.length, b.length
     for i in [0...minlen]
       if not @equals a[i], b[i]
@@ -191,7 +191,7 @@ class jsondiff
     return minlen
 
   # Returns the length of common elements at end of two arrays
-  _common_suffix: (a, b) ->
+  _common_suffix: (a, b) =>
     lena = a.length
     lenb = b.length
     minlen = Math.min a.length, b.length
@@ -225,7 +225,7 @@ class jsondiff
 #
 #     { '0' : {'o':'I', 'v':4},
 #       '1' : {'o':'I', 'v':-5} }
-  list_diff: (a, b) ->
+  list_diff: (a, b) =>
     diffs = {}
     lena = a.length
     lenb = b.length
@@ -257,7 +257,7 @@ class jsondiff
     return diffs
 
 # Compare two objects and generate a diff object to be applied to an object (dictionary).
-  object_diff: (a, b) ->
+  object_diff: (a, b) =>
     diffs = {}
     if not a? or not b? then return {}
     for own key of a
@@ -281,7 +281,7 @@ class jsondiff
 # An operation object is
 #
 #     {'o':(operation type), 'v':(operation parameter value)}
-  diff: (a, b) ->
+  diff: (a, b) =>
     if @equals a, b
       return {}
     typea = @typeOf a
@@ -306,7 +306,7 @@ class jsondiff
 
 # Applies a diff object (which consists of a map of keys to operations) to an array (`s`) and
 # returns a new list with the operations in `diffs` applied to it
-  apply_list_diff: (s, diffs) ->
+  apply_list_diff: (s, diffs) =>
     patched = @deepCopy s
     indexes = []
     deleted = []
@@ -356,7 +356,7 @@ class jsondiff
 
 # Applies a diff object (which consists of a map of keys to operations) to an object (`s`) and
 # returns a new object with the operations in `diffs` applied to it
-  apply_object_diff: (s, diffs) ->
+  apply_object_diff: (s, diffs) =>
     patched = @deepCopy s
     for own key, op of diffs
       switch op.o
@@ -387,7 +387,44 @@ class jsondiff
 
     return patched
 
-  transform_list_diff: (ad, bd, s) ->
+# Applies a diff object (which consists of a map of keys to operations) to an object (`s`) and
+# returns a new object with the operations in `diffs` applied to it
+  apply_object_diff_with_offsets: (s, diffs, field, offsets) =>
+    patched = @deepCopy s
+    for own key, op of diffs
+      switch op.o
+        # Add new key/value
+        when '+'
+          patched[key] = op.v
+        # Delete a key
+        when '-'
+          delete patched[key]
+        # Replace the value for key
+        when 'r'
+          patched[key] = op.v
+        # Integer, add the difference to current value
+        when 'I'
+          patched[key] += op.v
+        # List, apply the diff operations to the current array
+        when 'L'
+          patched[key] = @apply_list_diff patched[key], op.v
+        # Object, apply the diff operations to the current object
+        when 'O'
+          patched[key] = @apply_object_diff patched[key], op.v
+        # String, apply the patch using diffmatchpatch
+        when 'd'
+          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op.v
+          dmp_patches = jsondiff.dmp.patch_make patched[key], dmp_diffs
+          if key is field
+            patched[key] = @patch_apply_with_offsets dmp_patches, patched[key],
+                offsets
+          else
+            dmp_result = jsondiff.dmp.patch_apply dmp_patches, patched[key]
+            patched[key] = dmp_result[0]
+
+    return patched
+
+  transform_list_diff: (ad, bd, s) =>
     ad_new = {}
     b_inserts = []
     b_deletes = []
@@ -412,7 +449,7 @@ class jsondiff
           ad_new[sindex] = diff[sindex]
     return ad_new
 
-  transform_object_diff: (ad, bd, s) ->
+  transform_object_diff: (ad, bd, s) =>
     ad_new = @deepCopy ad
     for own key, aop of ad
       if not (key of bd) then continue
@@ -459,4 +496,7 @@ class jsondiff
 
       return ad_new
 
-window.jsondiff = jsondiff
+  patch_apply_with_offsets: (patches, text, offsets) =>
+
+
+window['jsondiff'] = jsondiff

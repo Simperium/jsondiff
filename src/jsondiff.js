@@ -1,8 +1,26 @@
 (function() {
   var jsondiff;
-  var __hasProp = Object.prototype.hasOwnProperty;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty;
   jsondiff = (function() {
-    function jsondiff() {}
+    function jsondiff() {
+      this.patch_apply_with_offsets = __bind(this.patch_apply_with_offsets, this);;
+      this.transform_object_diff = __bind(this.transform_object_diff, this);;
+      this.transform_list_diff = __bind(this.transform_list_diff, this);;
+      this.apply_object_diff_with_offsets = __bind(this.apply_object_diff_with_offsets, this);;
+      this.apply_object_diff = __bind(this.apply_object_diff, this);;
+      this.apply_list_diff = __bind(this.apply_list_diff, this);;
+      this.diff = __bind(this.diff, this);;
+      this.object_diff = __bind(this.object_diff, this);;
+      this.list_diff = __bind(this.list_diff, this);;
+      this._common_suffix = __bind(this._common_suffix, this);;
+      this._common_prefix = __bind(this._common_prefix, this);;
+      this.object_equals = __bind(this.object_equals, this);;
+      this.list_equals = __bind(this.list_equals, this);;
+      this.equals = __bind(this.equals, this);;
+      this.deepCopy = __bind(this.deepCopy, this);;
+      this.typeOf = __bind(this.typeOf, this);;
+      this.entries = __bind(this.entries, this);;
+    }
     jsondiff.dmp = new diff_match_patch();
     jsondiff.prototype.entries = function(obj) {
       var key, n, value;
@@ -311,6 +329,44 @@
       }
       return patched;
     };
+    jsondiff.prototype.apply_object_diff_with_offsets = function(s, diffs, field, offsets) {
+      var dmp_diffs, dmp_patches, dmp_result, key, op, patched;
+      patched = this.deepCopy(s);
+      for (key in diffs) {
+        if (!__hasProp.call(diffs, key)) continue;
+        op = diffs[key];
+        switch (op.o) {
+          case '+':
+            patched[key] = op.v;
+            break;
+          case '-':
+            delete patched[key];
+            break;
+          case 'r':
+            patched[key] = op.v;
+            break;
+          case 'I':
+            patched[key] += op.v;
+            break;
+          case 'L':
+            patched[key] = this.apply_list_diff(patched[key], op.v);
+            break;
+          case 'O':
+            patched[key] = this.apply_object_diff(patched[key], op.v);
+            break;
+          case 'd':
+            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[key], op.v);
+            dmp_patches = jsondiff.dmp.patch_make(patched[key], dmp_diffs);
+            if (key === field) {
+              patched[key] = this.patch_apply_with_offsets(dmp_patches, patched[key], offsets);
+            } else {
+              dmp_result = jsondiff.dmp.patch_apply(dmp_patches, patched[key]);
+              patched[key] = dmp_result[0];
+            }
+        }
+      }
+      return patched;
+    };
     jsondiff.prototype.transform_list_diff = function(ad, bd, s) {
       var ad_new, b_deletes, b_inserts, diff, index, op, shift_l, shift_r, sindex, x;
       ad_new = {};
@@ -442,7 +498,8 @@
         return ad_new;
       }
     };
+    jsondiff.prototype.patch_apply_with_offsets = function(patches, text, offsets) {};
     return jsondiff;
   })();
-  window.jsondiff = jsondiff;
+  window['jsondiff'] = jsondiff;
 }).call(this);
