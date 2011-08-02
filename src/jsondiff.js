@@ -502,4 +502,12 @@
     return jsondiff;
   })();
   window['jsondiff'] = jsondiff;
+  jsondiff.prototype['entries'] = jsondiff.prototype.entries;
+  jsondiff.prototype['typeOf'] = jsondiff.prototype.typeOf;
+  jsondiff.prototype['deepCopy'] = jsondiff.prototype.deepCopy;
+  jsondiff.prototype['equals'] = jsondiff.prototype.equals;
+  jsondiff.prototype['diff'] = jsondiff.prototype.diff;
+  jsondiff.prototype['object_diff'] = jsondiff.prototype.object_diff;
+  jsondiff.prototype['apply_object_diff'] = jsondiff.prototype.apply_object_diff;
+  jsondiff.prototype['transform_object_diff'] = jsondiff.prototype.transform_object_diff;
 }).call(this);
