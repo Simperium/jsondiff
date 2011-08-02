@@ -266,28 +266,28 @@
           return _results;
         })()).length;
         s_index = index - shift;
-        switch (op.o) {
+        switch (op['o']) {
           case '+':
-            [].splice.apply(patched, [s_index, s_index - s_index + 1].concat(_ref = op.v)), _ref;
+            [].splice.apply(patched, [s_index, s_index - s_index + 1].concat(_ref = op['v'])), _ref;
             break;
           case '-':
             [].splice.apply(patched, [s_index, s_index - s_index + 1].concat(_ref2 = [])), _ref2;
             deleted[deleted.length] = s_index;
             break;
           case 'r':
-            patched[s_index] = op.v;
+            patched[s_index] = op['v'];
             break;
           case 'I':
-            patched[s_index] += op.v;
+            patched[s_index] += op['v'];
             break;
           case 'L':
-            patched[s_index] = this.apply_list_diff(patched[s_index], op.v);
+            patched[s_index] = this.apply_list_diff(patched[s_index], op['v']);
             break;
           case 'O':
-            patched[s_index] = this.apply_object_diff(patched[s_index], op.v);
+            patched[s_index] = this.apply_object_diff(patched[s_index], op['v']);
             break;
           case 'd':
-            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[s_index], op.v);
+            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[s_index], op['v']);
             dmp_patches = jsondiff.dmp.patch_make(patched[s_index], dmp_diffs);
             dmp_result = jsondiff.dmp.patch_apply(dmp_patches, patched[s_index]);
             patched[s_index] = dmp_result[0];
@@ -301,27 +301,27 @@
       for (key in diffs) {
         if (!__hasProp.call(diffs, key)) continue;
         op = diffs[key];
-        switch (op.o) {
+        switch (op['o']) {
           case '+':
-            patched[key] = op.v;
+            patched[key] = op['v'];
             break;
           case '-':
             delete patched[key];
             break;
           case 'r':
-            patched[key] = op.v;
+            patched[key] = op['v'];
             break;
           case 'I':
-            patched[key] += op.v;
+            patched[key] += op['v'];
             break;
           case 'L':
-            patched[key] = this.apply_list_diff(patched[key], op.v);
+            patched[key] = this.apply_list_diff(patched[key], op['v']);
             break;
           case 'O':
-            patched[key] = this.apply_object_diff(patched[key], op.v);
+            patched[key] = this.apply_object_diff(patched[key], op['v']);
             break;
           case 'd':
-            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[key], op.v);
+            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[key], op['v']);
             dmp_patches = jsondiff.dmp.patch_make(patched[key], dmp_diffs);
             dmp_result = jsondiff.dmp.patch_apply(dmp_patches, patched[key]);
             patched[key] = dmp_result[0];
@@ -335,27 +335,27 @@
       for (key in diffs) {
         if (!__hasProp.call(diffs, key)) continue;
         op = diffs[key];
-        switch (op.o) {
+        switch (op['o']) {
           case '+':
-            patched[key] = op.v;
+            patched[key] = op['v'];
             break;
           case '-':
             delete patched[key];
             break;
           case 'r':
-            patched[key] = op.v;
+            patched[key] = op['v'];
             break;
           case 'I':
-            patched[key] += op.v;
+            patched[key] += op['v'];
             break;
           case 'L':
-            patched[key] = this.apply_list_diff(patched[key], op.v);
+            patched[key] = this.apply_list_diff(patched[key], op['v']);
             break;
           case 'O':
-            patched[key] = this.apply_object_diff(patched[key], op.v);
+            patched[key] = this.apply_object_diff(patched[key], op['v']);
             break;
           case 'd':
-            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[key], op.v);
+            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[key], op['v']);
             dmp_patches = jsondiff.dmp.patch_make(patched[key], dmp_diffs);
             if (key === field) {
               patched[key] = this.patch_apply_with_offsets(dmp_patches, patched[key], offsets);
@@ -375,10 +375,10 @@
       for (index in bd) {
         if (!__hasProp.call(bd, index)) continue;
         op = bd[index];
-        if (op.o === '+') {
+        if (op['o'] === '+') {
           b_inserts.push(index);
         }
-        if (op.o === '-') {
+        if (op['o'] === '-') {
           b_deletes.push(index);
         }
       }
@@ -415,15 +415,15 @@
         sindex = String(index);
         ad_new[sindex] = op;
         if (index in bd) {
-          if (op.o === '+' && bd.index.op === '+') {
+          if (op['o'] === '+' && bd.index['o'] === '+') {
             continue;
-          } else if (op.o === '-' && bd.index.op === '-') {
+          } else if (op['o'] === '-' && bd.index['o'] === '-') {
             delete ad_new[sindex];
           } else {
             diff = this.transform_object_diff({
               sindex: op
             }, {
-              sindex: bd.index.op
+              sindex: bd.index
             }, s);
             ad_new[sindex] = diff[sindex];
           }
@@ -442,44 +442,44 @@
         }
         sk = s[key];
         bop = bd[key];
-        if (aop.o === '+' && bop.o === '+') {
-          if (this.equals(aop.v, bop.v)) {
+        if (aop['o'] === '+' && bop['o'] === '+') {
+          if (this.equals(aop['v'], bop['v'])) {
             delete ad_new[key];
           } else {
-            ad_new[key] = this.diff(bop.v, aop.v);
+            ad_new[key] = this.diff(bop['v'], aop['v']);
           }
-        } else if (aop.o === '-' && bop.o === '-') {
+        } else if (aop['o'] === '-' && bop['o'] === '-') {
           delete ad_new[key];
-        } else if (bop.o === '-' && ((_ref = aop.o) === 'O' || _ref === 'L' || _ref === 'I' || _ref === 'd')) {
+        } else if (bop['o'] === '-' && ((_ref = aop['o']) === 'O' || _ref === 'L' || _ref === 'I' || _ref === 'd')) {
           ad_new[key] = {
             'o': '+'
           };
-          if (aop.o === 'O') {
-            ad_new[key].v = this.apply_object_diff(sk, aop.v);
-          } else if (aop.o === 'L') {
-            ad_new[key].v = this.apply_list_diff(sk, aop.v);
-          } else if (aop.o === 'I') {
-            ad_new[key].v = sk + aop.v;
-          } else if (aop.o === 'd') {
-            dmp_diffs = jsondiff.dmp.diff_fromDelta(sk, aop.v);
+          if (aop['o'] === 'O') {
+            ad_new[key]['v'] = this.apply_object_diff(sk, aop['v']);
+          } else if (aop['o'] === 'L') {
+            ad_new[key]['v'] = this.apply_list_diff(sk, aop['v']);
+          } else if (aop['o'] === 'I') {
+            ad_new[key]['v'] = sk + aop['v'];
+          } else if (aop['o'] === 'd') {
+            dmp_diffs = jsondiff.dmp.diff_fromDelta(sk, aop['v']);
             dmp_patches = jsondiff.dmp.patch_make(sk, dmp_diffs);
             dmp_result = jsondiff.dmp.patch_apply(dmp_patches, sk);
-            ad_new[key].v = dmp_result[0];
+            ad_new[key]['v'] = dmp_result[0];
           }
-        } else if (aop.o === 'O' && bop.o === 'O') {
+        } else if (aop['o'] === 'O' && bop['o'] === 'O') {
           ad_new[key] = {
             'o': 'O',
-            'v': this.transform_object_diff(aop.v, bop.v, sk)
+            'v': this.transform_object_diff(aop['v'], bop['v'], sk)
           };
-        } else if (aop.o === 'L' && bop.o === 'L') {
+        } else if (aop['o'] === 'L' && bop['o'] === 'L') {
           ad_new[key] = {
             'o': 'O',
-            'v': this.transform_list_diff(aop.v, bop.v, sk)
+            'v': this.transform_list_diff(aop['v'], bop['v'], sk)
           };
-        } else if (aop.o === 'd' && bop.o === 'd') {
+        } else if (aop['o'] === 'd' && bop['o'] === 'd') {
           delete ad_new[key];
-          a_patches = jsondiff.dmp.patch_make(sk, jsondiff.dmp.diff_fromDelta(sk, aop.v));
-          b_patches = jsondiff.dmp.patch_make(sk, jsondiff.dmp.diff_fromDelta(sk, bop.v));
+          a_patches = jsondiff.dmp.patch_make(sk, jsondiff.dmp.diff_fromDelta(sk, aop['v']));
+          b_patches = jsondiff.dmp.patch_make(sk, jsondiff.dmp.diff_fromDelta(sk, bop['v']));
           b_text = (jsondiff.dmp.patch_apply(b_patches, sk))[0];
           ab_text = (jsondiff.dmp.patch_apply(a_patches, b_text))[0];
           if (ab_text !== b_text) {

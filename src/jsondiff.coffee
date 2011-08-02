@@ -325,29 +325,29 @@ class jsondiff
       shift = (x for x in deleted when x <= index).length
       s_index = index - shift
 
-      switch op.o
+      switch op['o']
         # Insert new value at index
         when '+'
-          patched[s_index..s_index] = op.v
+          patched[s_index..s_index] = op['v']
         # Delete value at index
         when '-'
           patched[s_index..s_index] = []
           deleted[deleted.length] = s_index
         # Replace value at index
         when 'r'
-          patched[s_index] = op.v
+          patched[s_index] = op['v']
         # Integer, add the difference to current value
         when 'I'
-          patched[s_index] += op.v
+          patched[s_index] += op['v']
         # List, apply the diff operations to the current array
         when 'L'
-          patched[s_index] = @apply_list_diff patched[s_index], op.v
+          patched[s_index] = @apply_list_diff patched[s_index], op['v']
         # Object, apply the diff operations to the current object
         when 'O'
-          patched[s_index] = @apply_object_diff patched[s_index], op.v
+          patched[s_index] = @apply_object_diff patched[s_index], op['v']
         # String, apply the patch using diffmatchpatch
         when 'd'
-          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[s_index], op.v
+          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[s_index], op['v']
           dmp_patches = jsondiff.dmp.patch_make patched[s_index], dmp_diffs
           dmp_result = jsondiff.dmp.patch_apply dmp_patches, patched[s_index]
           patched[s_index] = dmp_result[0]
@@ -360,28 +360,28 @@ class jsondiff
   apply_object_diff: (s, diffs) =>
     patched = @deepCopy s
     for own key, op of diffs
-      switch op.o
+      switch op['o']
         # Add new key/value
         when '+'
-          patched[key] = op.v
+          patched[key] = op['v']
         # Delete a key
         when '-'
           delete patched[key]
         # Replace the value for key
         when 'r'
-          patched[key] = op.v
+          patched[key] = op['v']
         # Integer, add the difference to current value
         when 'I'
-          patched[key] += op.v
+          patched[key] += op['v']
         # List, apply the diff operations to the current array
         when 'L'
-          patched[key] = @apply_list_diff patched[key], op.v
+          patched[key] = @apply_list_diff patched[key], op['v']
         # Object, apply the diff operations to the current object
         when 'O'
-          patched[key] = @apply_object_diff patched[key], op.v
+          patched[key] = @apply_object_diff patched[key], op['v']
         # String, apply the patch using diffmatchpatch
         when 'd'
-          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op.v
+          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op['v']
           dmp_patches = jsondiff.dmp.patch_make patched[key], dmp_diffs
           dmp_result = jsondiff.dmp.patch_apply dmp_patches, patched[key]
           patched[key] = dmp_result[0]
@@ -393,28 +393,28 @@ class jsondiff
   apply_object_diff_with_offsets: (s, diffs, field, offsets) =>
     patched = @deepCopy s
     for own key, op of diffs
-      switch op.o
+      switch op['o']
         # Add new key/value
         when '+'
-          patched[key] = op.v
+          patched[key] = op['v']
         # Delete a key
         when '-'
           delete patched[key]
         # Replace the value for key
         when 'r'
-          patched[key] = op.v
+          patched[key] = op['v']
         # Integer, add the difference to current value
         when 'I'
-          patched[key] += op.v
+          patched[key] += op['v']
         # List, apply the diff operations to the current array
         when 'L'
-          patched[key] = @apply_list_diff patched[key], op.v
+          patched[key] = @apply_list_diff patched[key], op['v']
         # Object, apply the diff operations to the current object
         when 'O'
-          patched[key] = @apply_object_diff patched[key], op.v
+          patched[key] = @apply_object_diff patched[key], op['v']
         # String, apply the patch using diffmatchpatch
         when 'd'
-          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op.v
+          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op['v']
           dmp_patches = jsondiff.dmp.patch_make patched[key], dmp_diffs
           if key is field
             patched[key] = @patch_apply_with_offsets dmp_patches, patched[key],
@@ -430,8 +430,8 @@ class jsondiff
     b_inserts = []
     b_deletes = []
     for own index, op of bd
-      if op.o is '+' then b_inserts.push index
-      if op.o is '-' then b_deletes.push index
+      if op['o'] is '+' then b_inserts.push index
+      if op['o'] is '-' then b_deletes.push index
     for own index, op of ad
       shift_r = [x for x in b_inserts when x <= index].length
       shift_l = [x for x in b_deletes when x <= index].length
@@ -441,12 +441,12 @@ class jsondiff
 
       ad_new[sindex] = op
       if index of bd
-        if op.o is '+' and bd.index.op is '+'
+        if op['o'] is '+' and bd.index['o'] is '+'
           continue
-        else if op.o is '-' and bd.index.op is '-'
+        else if op['o'] is '-' and bd.index['o'] is '-'
           delete ad_new[sindex]
         else
-          diff = @transform_object_diff({sindex:op}, {sindex:bd.index.op}, s)
+          diff = @transform_object_diff({sindex:op}, {sindex:bd.index}, s)
           ad_new[sindex] = diff[sindex]
     return ad_new
 
@@ -458,34 +458,34 @@ class jsondiff
       sk = s[key]
       bop = bd[key]
 
-      if aop.o is '+' and bop.o is '+'
-        if @equals aop.v, bop.v
+      if aop['o'] is '+' and bop['o'] is '+'
+        if @equals aop['v'], bop['v']
           delete ad_new[key]
         else
-          ad_new[key] = @diff bop.v, aop.v
-      else if aop.o is '-' and bop.o is '-'
+          ad_new[key] = @diff bop['v'], aop['v']
+      else if aop['o'] is '-' and bop['o'] is '-'
         delete ad_new[key]
-      else if bop.o is '-' and aop.o in ['O', 'L', 'I', 'd']
+      else if bop['o'] is '-' and aop['o'] in ['O', 'L', 'I', 'd']
         ad_new[key] = {'o':'+'}
-        if aop.o is 'O'
-          ad_new[key].v = @apply_object_diff sk, aop.v
-        else if aop.o is 'L'
-          ad_new[key].v = @apply_list_diff sk, aop.v
-        else if aop.o is 'I'
-          ad_new[key].v = sk + aop.v
-        else if aop.o is 'd'
-          dmp_diffs = jsondiff.dmp.diff_fromDelta sk, aop.v
+        if aop['o'] is 'O'
+          ad_new[key]['v'] = @apply_object_diff sk, aop['v']
+        else if aop['o'] is 'L'
+          ad_new[key]['v'] = @apply_list_diff sk, aop['v']
+        else if aop['o'] is 'I'
+          ad_new[key]['v'] = sk + aop['v']
+        else if aop['o'] is 'd'
+          dmp_diffs = jsondiff.dmp.diff_fromDelta sk, aop['v']
           dmp_patches = jsondiff.dmp.patch_make sk, dmp_diffs
           dmp_result = jsondiff.dmp.patch_apply dmp_patches, sk
-          ad_new[key].v = dmp_result[0]
-      else if aop.o is 'O' and bop.o is 'O'
-        ad_new[key] = {'o':'O', 'v': @transform_object_diff aop.v, bop.v, sk}
-      else if aop.o is 'L' and bop.o is 'L'
-        ad_new[key] = {'o':'O', 'v': @transform_list_diff aop.v, bop.v, sk}
-      else if aop.o is 'd' and bop.o is 'd'
+          ad_new[key]['v'] = dmp_result[0]
+      else if aop['o'] is 'O' and bop['o'] is 'O'
+        ad_new[key] = {'o':'O', 'v': @transform_object_diff aop['v'], bop['v'], sk}
+      else if aop['o'] is 'L' and bop['o'] is 'L'
+        ad_new[key] = {'o':'O', 'v': @transform_list_diff aop['v'], bop['v'], sk}
+      else if aop['o'] is 'd' and bop['o'] is 'd'
         delete ad_new[key]
-        a_patches = jsondiff.dmp.patch_make sk, jsondiff.dmp.diff_fromDelta sk, aop.v
-        b_patches = jsondiff.dmp.patch_make sk, jsondiff.dmp.diff_fromDelta sk, bop.v
+        a_patches = jsondiff.dmp.patch_make sk, jsondiff.dmp.diff_fromDelta sk, aop['v']
+        b_patches = jsondiff.dmp.patch_make sk, jsondiff.dmp.diff_fromDelta sk, bop['v']
         b_text = (jsondiff.dmp.patch_apply b_patches, sk)[0]
         ab_text = (jsondiff.dmp.patch_apply a_patches, b_text)[0]
         if ab_text != b_text
