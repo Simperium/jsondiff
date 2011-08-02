@@ -290,7 +290,8 @@ class jsondiff
 
     switch typea
       when 'boolean'  then return {'o': 'r', 'v': b}
-      when 'number'   then return {'o': 'I', 'v': b-a}
+#      when 'number'   then return {'o': 'I', 'v': b-a}
+      when 'number'   then return {'o': 'r', 'v': b}
       when 'array'    then return {'o': 'L', 'v': @list_diff a, b}
       when 'object'   then return {'o': 'O', 'v': @object_diff a, b}
       when 'string'

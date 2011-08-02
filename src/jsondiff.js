@@ -214,8 +214,8 @@
           };
         case 'number':
           return {
-            'o': 'I',
-            'v': b - a
+            'o': 'r',
+            'v': b
           };
         case 'array':
           return {
