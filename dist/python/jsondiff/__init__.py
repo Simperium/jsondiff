@@ -286,7 +286,7 @@ def diff(a, b):
         return None
     if not sametype(a,b):
         return {'o':'r', 'v': b}
-    if type(a) == int:
+    if type(a) in [int, float, long]:
         return {'o':'r', 'v': b}
     elif type(a) == bool:
         return {'o':'r', 'v': b}
