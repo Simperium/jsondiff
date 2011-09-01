@@ -18,6 +18,8 @@ class AssertionsTests(unittest.TestCase):
 
         def run_assertion(method, description, args, expected):
             description = method + ': ' + description
+            print
+            print "Running", description, method, args, expected
             method = {
                 'diff': diff,
                 'applydiff': applydiff,
