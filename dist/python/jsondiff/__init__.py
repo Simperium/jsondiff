@@ -287,11 +287,11 @@ def diff(a, b):
     if not sametype(a,b):
         return {'o':'r', 'v': b}
     if type(a) == int:
-        return {'o':'I', 'v': b - a}
+        return {'o':'r', 'v': b}
     elif type(a) == bool:
         return {'o':'r', 'v': b}
     elif type(a) == list:
-        return {'o':'L', 'v':listdiff2(a,b)}
+        return {'o':'r', 'v': b}
     elif type(a) == dict:
         return {'o':'O', 'v':objdiff2(a,b)}
     elif type(a) in [str, unicode]:

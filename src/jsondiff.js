@@ -3,23 +3,23 @@
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty;
   jsondiff = (function() {
     function jsondiff() {
-      this.patch_apply_with_offsets = __bind(this.patch_apply_with_offsets, this);;
-      this.transform_object_diff = __bind(this.transform_object_diff, this);;
-      this.transform_list_diff = __bind(this.transform_list_diff, this);;
-      this.apply_object_diff_with_offsets = __bind(this.apply_object_diff_with_offsets, this);;
-      this.apply_object_diff = __bind(this.apply_object_diff, this);;
-      this.apply_list_diff = __bind(this.apply_list_diff, this);;
-      this.diff = __bind(this.diff, this);;
-      this.object_diff = __bind(this.object_diff, this);;
-      this.list_diff = __bind(this.list_diff, this);;
-      this._common_suffix = __bind(this._common_suffix, this);;
-      this._common_prefix = __bind(this._common_prefix, this);;
-      this.object_equals = __bind(this.object_equals, this);;
-      this.list_equals = __bind(this.list_equals, this);;
-      this.equals = __bind(this.equals, this);;
-      this.deepCopy = __bind(this.deepCopy, this);;
-      this.typeOf = __bind(this.typeOf, this);;
-      this.entries = __bind(this.entries, this);;
+      this.patch_apply_with_offsets = __bind(this.patch_apply_with_offsets, this);
+      this.transform_object_diff = __bind(this.transform_object_diff, this);
+      this.transform_list_diff = __bind(this.transform_list_diff, this);
+      this.apply_object_diff_with_offsets = __bind(this.apply_object_diff_with_offsets, this);
+      this.apply_object_diff = __bind(this.apply_object_diff, this);
+      this.apply_list_diff = __bind(this.apply_list_diff, this);
+      this.diff = __bind(this.diff, this);
+      this.object_diff = __bind(this.object_diff, this);
+      this.list_diff = __bind(this.list_diff, this);
+      this._common_suffix = __bind(this._common_suffix, this);
+      this._common_prefix = __bind(this._common_prefix, this);
+      this.object_equals = __bind(this.object_equals, this);
+      this.list_equals = __bind(this.list_equals, this);
+      this.equals = __bind(this.equals, this);
+      this.deepCopy = __bind(this.deepCopy, this);
+      this.typeOf = __bind(this.typeOf, this);
+      this.entries = __bind(this.entries, this);
     }
     jsondiff.dmp = new diff_match_patch();
     jsondiff.prototype.entries = function(obj) {
@@ -219,8 +219,8 @@
           };
         case 'array':
           return {
-            'o': 'L',
-            'v': this.list_diff(a, b)
+            'o': 'r',
+            'v': b
           };
         case 'object':
           return {
