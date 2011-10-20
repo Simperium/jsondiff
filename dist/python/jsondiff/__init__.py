@@ -9,7 +9,6 @@ import sys
 import os
 import copy
 import json
-import logging
 
 from diffmatchpatch import diff_match_patch
 
@@ -219,9 +218,7 @@ def transform_list(a, b, s):
 # return a' where T(T(S0, b), a') == T(T(S0, a), b') # not really since DMP deltas will not satisfy this property
 def transform_object(a, b, s):
     ac = copy.deepcopy(a)
-    logging.info('transform_object(a=%s, b=%s, s=%s)' % (a,b,s))
     for k, op in a.iteritems():
-        logging.info('transform_object(): testing k=[%s]' % k)
         if k in b:
             sk = None
             if type(s) == list:
@@ -275,7 +272,6 @@ def transform_object(a, b, s):
 # changes = list of operations
 # s = common object ancestor
 def transform(a, changes, s):
-    logging.info('transform(a=%s, changes=%s, s=%s)' % (a, changes, s))
     for change in changes:
         a = transform_object(a, change, s)
         s = applydiff(s, change)
