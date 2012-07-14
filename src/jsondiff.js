@@ -1,7 +1,10 @@
 (function() {
-  var jsondiff;
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty;
+  var jsondiff,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = Object.prototype.hasOwnProperty;
+
   jsondiff = (function() {
+
     function jsondiff() {
       this.patch_apply_with_offsets = __bind(this.patch_apply_with_offsets, this);
       this.transform_object_diff = __bind(this.transform_object_diff, this);
@@ -21,7 +24,9 @@
       this.typeOf = __bind(this.typeOf, this);
       this.entries = __bind(this.entries, this);
     }
+
     jsondiff.dmp = new diff_match_patch();
+
     jsondiff.prototype.entries = function(obj) {
       var key, n, value;
       n = 0;
@@ -32,6 +37,7 @@
       }
       return n;
     };
+
     jsondiff.prototype.typeOf = function(value) {
       var s;
       s = typeof value;
@@ -46,6 +52,7 @@
       }
       return s;
     };
+
     jsondiff.prototype.deepCopy = function(obj) {
       var i, out, _ref;
       if (Object.prototype.toString.call(obj) === '[object Array]') {
@@ -64,12 +71,11 @@
       }
       return obj;
     };
+
     jsondiff.prototype.equals = function(a, b) {
       var typea;
       typea = this.typeOf(a);
-      if (typea !== this.typeOf(b)) {
-        return false;
-      }
+      if (typea !== this.typeOf(b)) return false;
       if (typea === 'array') {
         return this.list_equals(a, b);
       } else if (typea === 'object') {
@@ -78,63 +84,52 @@
         return a === b;
       }
     };
+
     jsondiff.prototype.list_equals = function(a, b) {
       var alength, i;
       alength = a.length;
-      if (alength !== b.length) {
-        return false;
-      }
+      if (alength !== b.length) return false;
       for (i = 0; 0 <= alength ? i < alength : i > alength; 0 <= alength ? i++ : i--) {
-        if (!this.equals(a[i], b[i])) {
-          return false;
-        }
+        if (!this.equals(a[i], b[i])) return false;
       }
       return true;
     };
+
     jsondiff.prototype.object_equals = function(a, b) {
       var key;
       for (key in a) {
         if (!__hasProp.call(a, key)) continue;
-        if (!(key in b)) {
-          return false;
-        }
-        if (!this.equals(a[key], b[key])) {
-          return false;
-        }
+        if (!(key in b)) return false;
+        if (!this.equals(a[key], b[key])) return false;
       }
       for (key in b) {
         if (!__hasProp.call(b, key)) continue;
-        if (!(key in a)) {
-          return false;
-        }
+        if (!(key in a)) return false;
       }
       return true;
     };
+
     jsondiff.prototype._common_prefix = function(a, b) {
       var i, minlen;
       minlen = Math.min(a.length, b.length);
       for (i = 0; 0 <= minlen ? i < minlen : i > minlen; 0 <= minlen ? i++ : i--) {
-        if (!this.equals(a[i], b[i])) {
-          return i;
-        }
+        if (!this.equals(a[i], b[i])) return i;
       }
       return minlen;
     };
+
     jsondiff.prototype._common_suffix = function(a, b) {
       var i, lena, lenb, minlen;
       lena = a.length;
       lenb = b.length;
       minlen = Math.min(a.length, b.length);
-      if (minlen === 0) {
-        return 0;
-      }
+      if (minlen === 0) return 0;
       for (i = 0; 0 <= minlen ? i < minlen : i > minlen; 0 <= minlen ? i++ : i--) {
-        if (!this.equals(a[lena - i - 1], b[lenb - i - 1])) {
-          return i;
-        }
+        if (!this.equals(a[lena - i - 1], b[lenb - i - 1])) return i;
       }
       return minlen;
     };
+
     jsondiff.prototype.list_diff = function(a, b) {
       var diffs, i, lena, lenb, maxlen, prefix_len, suffix_len;
       diffs = {};
@@ -142,8 +137,8 @@
       lenb = b.length;
       prefix_len = this._common_prefix(a, b);
       suffix_len = this._common_suffix(a, b);
-      a = a.slice(prefix_len, lena - suffix_len);
-      b = b.slice(prefix_len, lenb - suffix_len);
+      a = a.slice(prefix_len, (lena - suffix_len));
+      b = b.slice(prefix_len, (lenb - suffix_len));
       lena = a.length;
       lenb = b.length;
       maxlen = Math.max(lena, lenb);
@@ -165,18 +160,15 @@
       }
       return diffs;
     };
+
     jsondiff.prototype.object_diff = function(a, b) {
       var diffs, key;
       diffs = {};
-      if (!(a != null) || !(b != null)) {
-        return {};
-      }
+      if (!(a != null) || !(b != null)) return {};
       for (key in a) {
         if (!__hasProp.call(a, key)) continue;
         if (key in b) {
-          if (!this.equals(a[key], b[key])) {
-            diffs[key] = this.diff(a[key], b[key]);
-          }
+          if (!this.equals(a[key], b[key])) diffs[key] = this.diff(a[key], b[key]);
         } else {
           diffs[key] = {
             'o': '-'
@@ -185,7 +177,7 @@
       }
       for (key in b) {
         if (!__hasProp.call(b, key)) continue;
-        if (!(key in a)) {
+        if (!(key in a) && (b[key] != null)) {
           diffs[key] = {
             'o': '+',
             'v': b[key]
@@ -194,11 +186,10 @@
       }
       return diffs;
     };
+
     jsondiff.prototype.diff = function(a, b) {
       var diffs, typea;
-      if (this.equals(a, b)) {
-        return {};
-      }
+      if (this.equals(a, b)) return {};
       typea = this.typeOf(a);
       if (typea !== this.typeOf(b)) {
         return {
@@ -229,9 +220,7 @@
           };
         case 'string':
           diffs = jsondiff.dmp.diff_main(a, b);
-          if (diffs.length > 2) {
-            jsondiff.dmp.diff_cleanupEfficiency(diffs);
-          }
+          if (diffs.length > 2) jsondiff.dmp.diff_cleanupEfficiency(diffs);
           if (diffs.length > 0) {
             return {
               'o': 'd',
@@ -241,6 +230,7 @@
       }
       return {};
     };
+
     jsondiff.prototype.apply_list_diff = function(s, diffs) {
       var deleted, dmp_diffs, dmp_patches, dmp_result, index, indexes, key, op, patched, s_index, shift, x, _i, _len, _ref, _ref2;
       patched = this.deepCopy(s);
@@ -259,9 +249,7 @@
           _results = [];
           for (_j = 0, _len2 = deleted.length; _j < _len2; _j++) {
             x = deleted[_j];
-            if (x <= index) {
-              _results.push(x);
-            }
+            if (x <= index) _results.push(x);
           }
           return _results;
         })()).length;
@@ -295,6 +283,7 @@
       }
       return patched;
     };
+
     jsondiff.prototype.apply_object_diff = function(s, diffs) {
       var dmp_diffs, dmp_patches, dmp_result, key, op, patched;
       patched = this.deepCopy(s);
@@ -329,6 +318,7 @@
       }
       return patched;
     };
+
     jsondiff.prototype.apply_object_diff_with_offsets = function(s, diffs, field, offsets) {
       var dmp_diffs, dmp_patches, dmp_result, key, op, patched;
       patched = this.deepCopy(s);
@@ -367,6 +357,7 @@
       }
       return patched;
     };
+
     jsondiff.prototype.transform_list_diff = function(ad, bd, s) {
       var ad_new, b_deletes, b_inserts, diff, index, op, shift_l, shift_r, sindex, x;
       ad_new = {};
@@ -375,12 +366,8 @@
       for (index in bd) {
         if (!__hasProp.call(bd, index)) continue;
         op = bd[index];
-        if (op['o'] === '+') {
-          b_inserts.push(index);
-        }
-        if (op['o'] === '-') {
-          b_deletes.push(index);
-        }
+        if (op['o'] === '+') b_inserts.push(index);
+        if (op['o'] === '-') b_deletes.push(index);
       }
       for (index in ad) {
         if (!__hasProp.call(ad, index)) continue;
@@ -391,9 +378,7 @@
             _results = [];
             for (_i = 0, _len = b_inserts.length; _i < _len; _i++) {
               x = b_inserts[_i];
-              if (x <= index) {
-                _results.push(x);
-              }
+              if (x <= index) _results.push(x);
             }
             return _results;
           })()
@@ -404,9 +389,7 @@
             _results = [];
             for (_i = 0, _len = b_deletes.length; _i < _len; _i++) {
               x = b_deletes[_i];
-              if (x <= index) {
-                _results.push(x);
-              }
+              if (x <= index) _results.push(x);
             }
             return _results;
           })()
@@ -431,15 +414,14 @@
       }
       return ad_new;
     };
+
     jsondiff.prototype.transform_object_diff = function(ad, bd, s) {
       var a_patches, ab_text, ad_new, aop, b_patches, b_text, bop, dmp_diffs, dmp_patches, dmp_result, key, sk, _ref;
       ad_new = this.deepCopy(ad);
       for (key in ad) {
         if (!__hasProp.call(ad, key)) continue;
         aop = ad[key];
-        if (!(key in bd)) {
-          continue;
-        }
+        if (!(key in bd)) continue;
         sk = s[key];
         bop = bd[key];
         if (aop['o'] === '+' && bop['o'] === '+') {
@@ -465,6 +447,8 @@
             dmp_patches = jsondiff.dmp.patch_make(sk, dmp_diffs);
             dmp_result = jsondiff.dmp.patch_apply(dmp_patches, sk);
             ad_new[key]['v'] = dmp_result[0];
+          } else {
+            delete ad_new[key];
           }
         } else if (aop['o'] === 'O' && bop['o'] === 'O') {
           ad_new[key] = {
@@ -498,7 +482,9 @@
         return ad_new;
       }
     };
+
     jsondiff.prototype.patch_apply_with_offsets = function(patches, text, offsets) {};
+
     jsondiff.prototype.patch_apply_with_offsets = function(patches, text, offsets) {
     if (patches.length == 0) {
       return text;
@@ -613,7 +599,11 @@
     text = text.substring(nullPadding.length, text.length - nullPadding.length);
     return text;
   };
+
     return jsondiff;
+
   })();
+
   window['jsondiff'] = jsondiff;
+
 }).call(this);

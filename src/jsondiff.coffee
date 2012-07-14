@@ -269,7 +269,7 @@ class jsondiff
         # Object a has this key but object b doesn't, remove from a
         diffs[key] = {'o':'-'}
     for own key of b
-      if not (key of a)
+      if not (key of a) and b[key]?
         # Object b has this key but object a doesn't, add to a
         diffs[key] = {'o':'+', 'v':b[key]}
 
@@ -477,6 +477,8 @@ class jsondiff
           dmp_patches = jsondiff.dmp.patch_make sk, dmp_diffs
           dmp_result = jsondiff.dmp.patch_apply dmp_patches, sk
           ad_new[key]['v'] = dmp_result[0]
+        else
+          delete ad_new[key]
       else if aop['o'] is 'O' and bop['o'] is 'O'
         ad_new[key] = {'o':'O', 'v': @transform_object_diff aop['v'], bop['v'], sk}
       else if aop['o'] is 'L' and bop['o'] is 'L'
