@@ -17,11 +17,17 @@ DMP = diff_match_patch()
 def sametype(a, b):
     if (type(a) == str and type(b) == unicode) or (type(a) == unicode and type(b) == str):
         return True
+    if (type(a) == bool and type(b) == int) or (type(a) == int and type(b) == bool):
+        return True
     return type(a) == type(b)
 
 def equals(a, b):
     if not sametype(a, b):
         return False
+    if type(a) == bool and type(b) == int:
+        return int(a) == b
+    if type(a) == int and type(b) == bool:
+        return a == int(b)
     if type(a) == list:
         return listequals(a, b)
     elif type(a) == dict:

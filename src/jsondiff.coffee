@@ -151,7 +151,12 @@ class jsondiff
   # Deep equals comparison
   equals: (a, b) =>
     typea = @typeOf a
-    if typea != @typeOf b
+    typeb = @typeOf b
+    if typea is 'boolean' and typeb is 'number'
+        return Number(a) is b
+    if typea is 'number' and typea is 'boolean'
+        return Number(b) is a
+    if typea != typeb
       return false
     if typea is 'array'
       return @list_equals a, b
