@@ -73,9 +73,12 @@
     };
 
     jsondiff.prototype.equals = function(a, b) {
-      var typea;
+      var typea, typeb;
       typea = this.typeOf(a);
-      if (typea !== this.typeOf(b)) return false;
+      typeb = this.typeOf(b);
+      if (typea === 'boolean' && typeb === 'number') return Number(a) === b;
+      if (typea === 'number' && typea === 'boolean') return Number(b) === a;
+      if (typea !== typeb) return false;
       if (typea === 'array') {
         return this.list_equals(a, b);
       } else if (typea === 'object') {
