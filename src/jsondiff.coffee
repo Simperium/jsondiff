@@ -154,7 +154,7 @@ class jsondiff
     typeb = @typeOf b
     if typea is 'boolean' and typeb is 'number'
         return Number(a) is b
-    if typea is 'number' and typea is 'boolean'
+    if typea is 'number' and typeb is 'boolean'
         return Number(b) is a
     if typea != typeb
       return false
