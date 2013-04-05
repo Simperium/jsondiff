@@ -230,7 +230,7 @@ class jsondiff
 #
 #     { '0' : {'o':'I', 'v':4},
 #       '1' : {'o':'I', 'v':-5} }
-  list_diff: (a, b) =>
+  list_diffx: (a, b) =>
     diffs = {}
     lena = a.length
     lenb = b.length
@@ -260,6 +260,31 @@ class jsondiff
         diffs[i+prefix_len] = {'o':'+', 'v':b[i]}
 
     return diffs
+
+  list_diff: (a, b) =>
+    lena = a.length
+    lenb = b.length
+    atext = @_serialize_to_text a
+    btext = @_serialize_to_text b
+
+    diffs = jsondiff.dmp.diff_lineMode_ atext, btext
+    jsondiff.dmp.diff_cleanupEfficiency(diffs)
+    delta = jsondiff.dmp.diff_toDelta(diffs)
+    return delta
+
+  _serialize_to_text: (a) =>
+    s = ''
+    lena = a.length
+    for i in [0..lena-1]
+      s += "#{JSON.stringify a[i]}\n"
+    return s
+
+  # FIXME: elements may be strings and contain \n
+  _text_to_array: (s) =>
+    a = []
+    sa = s.split("\n")
+    a = (JSON.parse(x) for x in sa when x.length > 0)
+    return a
 
 # Compare two objects and generate a diff object to be applied to an object (dictionary).
   object_diff: (a, b) =>
@@ -296,7 +321,7 @@ class jsondiff
     switch typea
       when 'boolean'  then return {'o': 'r', 'v': b}
       when 'number'   then return {'o': 'r', 'v': b}
-      when 'array'    then return {'o': 'r', 'v': b}
+      when 'array'    then return {'o': 'L', 'v': @list_diff a, b}
       when 'object'   then return {'o': 'O', 'v': @object_diff a, b}
       when 'string'
         # Use diffmatchpatch here for comparing strings
@@ -311,7 +336,7 @@ class jsondiff
 
 # Applies a diff object (which consists of a map of keys to operations) to an array (`s`) and
 # returns a new list with the operations in `diffs` applied to it
-  apply_list_diff: (s, diffs) =>
+  apply_list_diffx: (s, diffs) =>
     patched = @deepCopy s
     indexes = []
     deleted = []
@@ -358,6 +383,17 @@ class jsondiff
 
     return patched
 
+  apply_list_diff: (s, delta) =>
+      ptext = @_serialize_to_text s
+
+      dmp_diffs = jsondiff.dmp.diff_fromDelta(ptext, delta)
+      console.log("ald2: diffs:"+dmp_diffs)
+      dmp_patches = jsondiff.dmp.patch_make(ptext, dmp_diffs)
+      console.log("ald2: patches:"+dmp_patches)
+      dmp_result = jsondiff.dmp.patch_apply dmp_patches, ptext
+      console.log("ald2: result:"+dmp_result)
+
+      return @_text_to_array(dmp_result[0])
 
 # Applies a diff object (which consists of a map of keys to operations) to an object (`s`) and
 # returns a new object with the operations in `diffs` applied to it

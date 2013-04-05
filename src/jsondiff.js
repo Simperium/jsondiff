@@ -12,9 +12,13 @@
       this.apply_object_diff_with_offsets = __bind(this.apply_object_diff_with_offsets, this);
       this.apply_object_diff = __bind(this.apply_object_diff, this);
       this.apply_list_diff = __bind(this.apply_list_diff, this);
+      this.apply_list_diffx = __bind(this.apply_list_diffx, this);
       this.diff = __bind(this.diff, this);
       this.object_diff = __bind(this.object_diff, this);
+      this._text_to_array = __bind(this._text_to_array, this);
+      this._serialize_to_text = __bind(this._serialize_to_text, this);
       this.list_diff = __bind(this.list_diff, this);
+      this.list_diffx = __bind(this.list_diffx, this);
       this._common_suffix = __bind(this._common_suffix, this);
       this._common_prefix = __bind(this._common_prefix, this);
       this.object_equals = __bind(this.object_equals, this);
@@ -133,7 +137,7 @@
       return minlen;
     };
 
-    jsondiff.prototype.list_diff = function(a, b) {
+    jsondiff.prototype.list_diffx = function(a, b) {
       var diffs, i, lena, lenb, maxlen, prefix_len, suffix_len;
       diffs = {};
       lena = a.length;
@@ -162,6 +166,44 @@
         }
       }
       return diffs;
+    };
+
+    jsondiff.prototype.list_diff = function(a, b) {
+      var atext, btext, delta, diffs, lena, lenb;
+      lena = a.length;
+      lenb = b.length;
+      atext = this._serialize_to_text(a);
+      btext = this._serialize_to_text(b);
+      diffs = jsondiff.dmp.diff_lineMode_(atext, btext);
+      jsondiff.dmp.diff_cleanupEfficiency(diffs);
+      delta = jsondiff.dmp.diff_toDelta(diffs);
+      return delta;
+    };
+
+    jsondiff.prototype._serialize_to_text = function(a) {
+      var i, lena, s, _ref;
+      s = '';
+      lena = a.length;
+      for (i = 0, _ref = lena - 1; 0 <= _ref ? i <= _ref : i >= _ref; 0 <= _ref ? i++ : i--) {
+        s += "" + (JSON.stringify(a[i])) + "\n";
+      }
+      return s;
+    };
+
+    jsondiff.prototype._text_to_array = function(s) {
+      var a, sa, x;
+      a = [];
+      sa = s.split("\n");
+      a = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = sa.length; _i < _len; _i++) {
+          x = sa[_i];
+          if (x.length > 0) _results.push(JSON.parse(x));
+        }
+        return _results;
+      })();
+      return a;
     };
 
     jsondiff.prototype.object_diff = function(a, b) {
@@ -213,8 +255,8 @@
           };
         case 'array':
           return {
-            'o': 'r',
-            'v': b
+            'o': 'L',
+            'v': this.list_diff(a, b)
           };
         case 'object':
           return {
@@ -234,7 +276,7 @@
       return {};
     };
 
-    jsondiff.prototype.apply_list_diff = function(s, diffs) {
+    jsondiff.prototype.apply_list_diffx = function(s, diffs) {
       var deleted, dmp_diffs, dmp_patches, dmp_result, index, indexes, key, op, patched, s_index, shift, x, _i, _len, _ref, _ref2;
       patched = this.deepCopy(s);
       indexes = [];
@@ -285,6 +327,18 @@
         }
       }
       return patched;
+    };
+
+    jsondiff.prototype.apply_list_diff = function(s, delta) {
+      var dmp_diffs, dmp_patches, dmp_result, ptext;
+      ptext = this._serialize_to_text(s);
+      dmp_diffs = jsondiff.dmp.diff_fromDelta(ptext, delta);
+      console.log("ald2: diffs:" + dmp_diffs);
+      dmp_patches = jsondiff.dmp.patch_make(ptext, dmp_diffs);
+      console.log("ald2: patches:" + dmp_patches);
+      dmp_result = jsondiff.dmp.patch_apply(dmp_patches, ptext);
+      console.log("ald2: result:" + dmp_result);
+      return this._text_to_array(dmp_result[0]);
     };
 
     jsondiff.prototype.apply_object_diff = function(s, diffs) {

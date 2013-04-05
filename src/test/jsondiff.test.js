@@ -20,7 +20,9 @@ $(function(){
     }
 
     $.getJSON('assertions.json', function(assertions) {
-        test('jsondiff', function() {  
+        console.log("assertions:");
+        console.log(assertions);
+        test('jsondiff', function() {
             for (var i=0; i<assertions.length; i++) {
                 run_assertion(assertions[i][0], assertions[i][1], assertions[i][2], assertions[i][3]);
                 //
@@ -34,3 +36,9 @@ $(function(){
         });
     });
 });
+window.jd = new jsondiff()
+window.dmp = jsondiff.dmp;
+window.a = { 'a' : [1, 2, 3, 4, 55] };
+window.b = { 'a' : [3, 4, 5, 6, 55] };
+window.atext = jd._serialize_to_text(a.a)
+window.btext = jd._serialize_to_text(b.a)
