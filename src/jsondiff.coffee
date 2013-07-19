@@ -230,7 +230,7 @@ class jsondiff
 #
 #     { '0' : {'o':'I', 'v':4},
 #       '1' : {'o':'I', 'v':-5} }
-  list_diffx: (a, b) =>
+  list_diff: (a, b) =>
     diffs = {}
     lena = a.length
     lenb = b.length
@@ -261,7 +261,7 @@ class jsondiff
 
     return diffs
 
-  list_diff: (a, b) =>
+  list_diff_dmp: (a, b) =>
     lena = a.length
     lenb = b.length
     atext = @_serialize_to_text a
@@ -336,7 +336,7 @@ class jsondiff
 
 # Applies a diff object (which consists of a map of keys to operations) to an array (`s`) and
 # returns a new list with the operations in `diffs` applied to it
-  apply_list_diffx: (s, diffs) =>
+  apply_list_diff: (s, diffs) =>
     patched = @deepCopy s
     indexes = []
     deleted = []
@@ -383,7 +383,7 @@ class jsondiff
 
     return patched
 
-  apply_list_diff: (s, delta) =>
+  apply_list_diff_dmp: (s, delta) =>
       ptext = @_serialize_to_text s
 
       dmp_diffs = jsondiff.dmp.diff_fromDelta(ptext, delta)
@@ -462,33 +462,43 @@ class jsondiff
 
     return patched
 
-  transform_list_diffx: (ad, bd, s) =>
+  transform_list_diff: (ad, bd, s) =>
+    console.log("xregular transform_list_diff")
     ad_new = {}
     b_inserts = []
     b_deletes = []
     for own index, op of bd
+      index = parseInt(index)
       if op['o'] is '+' then b_inserts.push index
       if op['o'] is '-' then b_deletes.push index
     for own index, op of ad
-      shift_r = [x for x in b_inserts when x <= index].length
-      shift_l = [x for x in b_deletes when x <= index].length
+      index = parseInt(index)
+      shift_r = (x for x in b_inserts when x <= index).length
+      shift_l = (x for x in b_deletes when x < index).length
 
       index = index + shift_r - shift_l
       sindex = String(index)
 
       ad_new[sindex] = op
       if index of bd
-        if op['o'] is '+' and bd.index['o'] is '+'
+        if op['o'] is '+' and bd[index]['o'] is '+'
           continue
-        else if op['o'] is '-' and bd.index['o'] is '-'
-          delete ad_new[sindex]
+        else if op['o'] is '-'
+          if bd[index]['o'] is '-'
+            delete ad_new[sindex]
+        else if bd[index]['o'] is '-'
+          if op['o'] is not '+'
+            ad_new[sindex] = {'o':'+', 'v': @apply_object_diff s[sindex], op['v'] }
         else
-          diff = @transform_object_diff({sindex:op}, {sindex:bd.index}, s)
+          target_op = {}
+          target_op[sindex] = op
+          other_op = {}
+          other_op[sindex] = bd[index]
+          diff = @transform_object_diff(target_op, other_op, s)
           ad_new[sindex] = diff[sindex]
     return ad_new
 
-  transform_list_diff: (ad, bd, s) =>
-    console.log("transform_list_diff(#{JSON.stringify(ad)}, #{JSON.stringify(bd)}, #{JSON.stringify(s)})");
+  transform_list_diff_dmp: (ad, bd, s) =>
     stext = @_serialize_to_text s
     a_patches = jsondiff.dmp.patch_make stext, jsondiff.dmp.diff_fromDelta stext, ad
     b_patches = jsondiff.dmp.patch_make stext, jsondiff.dmp.diff_fromDelta stext, bd
@@ -504,7 +514,7 @@ class jsondiff
     return ""
 
   transform_object_diff: (ad, bd, s) =>
-    console.log("transform_object_diff(#{JSON.stringify(ad)}, #{JSON.stringify(bd)}, #{JSON.stringify(s)})");
+#    console.log("transform_object_diff(#{JSON.stringify(ad)}, #{JSON.stringify(bd)}, #{JSON.stringify(s)})");
     ad_new = @deepCopy ad
     for own key, aop of ad
       if not (key of bd) then continue

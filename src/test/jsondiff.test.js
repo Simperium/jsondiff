@@ -18,7 +18,6 @@ $(function(){
                 var diffa = jd.diff(args[0], args[1])['v'];
                 var diffb = jd.diff(args[0], args[2])['v'];
                 var tdiff = jd.transform_object_diff(diffa, diffb, orig);
-
                 ok(jd.entries(tdiff) > 0, description);
 
                 method = jd.apply_object_diff;
@@ -31,8 +30,6 @@ $(function(){
     }
 
     $.getJSON('assertions.json', function(assertions) {
-        console.log("assertions:");
-        console.log(assertions);
         test('jsondiff', function() {
             for (var i=0; i<assertions.length; i++) {
                 run_assertion(assertions[i][0], assertions[i][1], assertions[i][2], assertions[i][3]);

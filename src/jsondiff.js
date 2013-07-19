@@ -8,18 +8,18 @@
     function jsondiff() {
       this.patch_apply_with_offsets = __bind(this.patch_apply_with_offsets, this);
       this.transform_object_diff = __bind(this.transform_object_diff, this);
+      this.transform_list_diff_dmp = __bind(this.transform_list_diff_dmp, this);
       this.transform_list_diff = __bind(this.transform_list_diff, this);
-      this.transform_list_diffx = __bind(this.transform_list_diffx, this);
       this.apply_object_diff_with_offsets = __bind(this.apply_object_diff_with_offsets, this);
       this.apply_object_diff = __bind(this.apply_object_diff, this);
+      this.apply_list_diff_dmp = __bind(this.apply_list_diff_dmp, this);
       this.apply_list_diff = __bind(this.apply_list_diff, this);
-      this.apply_list_diffx = __bind(this.apply_list_diffx, this);
       this.diff = __bind(this.diff, this);
       this.object_diff = __bind(this.object_diff, this);
       this._text_to_array = __bind(this._text_to_array, this);
       this._serialize_to_text = __bind(this._serialize_to_text, this);
+      this.list_diff_dmp = __bind(this.list_diff_dmp, this);
       this.list_diff = __bind(this.list_diff, this);
-      this.list_diffx = __bind(this.list_diffx, this);
       this._common_suffix = __bind(this._common_suffix, this);
       this._common_prefix = __bind(this._common_prefix, this);
       this.object_equals = __bind(this.object_equals, this);
@@ -138,7 +138,7 @@
       return minlen;
     };
 
-    jsondiff.prototype.list_diffx = function(a, b) {
+    jsondiff.prototype.list_diff = function(a, b) {
       var diffs, i, lena, lenb, maxlen, prefix_len, suffix_len;
       diffs = {};
       lena = a.length;
@@ -169,7 +169,7 @@
       return diffs;
     };
 
-    jsondiff.prototype.list_diff = function(a, b) {
+    jsondiff.prototype.list_diff_dmp = function(a, b) {
       var atext, btext, delta, diffs, lena, lenb;
       lena = a.length;
       lenb = b.length;
@@ -277,7 +277,7 @@
       return {};
     };
 
-    jsondiff.prototype.apply_list_diffx = function(s, diffs) {
+    jsondiff.prototype.apply_list_diff = function(s, diffs) {
       var deleted, dmp_diffs, dmp_patches, dmp_result, index, indexes, key, op, patched, s_index, shift, x, _i, _len, _ref, _ref2;
       patched = this.deepCopy(s);
       indexes = [];
@@ -330,7 +330,7 @@
       return patched;
     };
 
-    jsondiff.prototype.apply_list_diff = function(s, delta) {
+    jsondiff.prototype.apply_list_diff_dmp = function(s, delta) {
       var dmp_diffs, dmp_patches, dmp_result, ptext;
       ptext = this._serialize_to_text(s);
       dmp_diffs = jsondiff.dmp.diff_fromDelta(ptext, delta);
@@ -413,56 +413,62 @@
       return patched;
     };
 
-    jsondiff.prototype.transform_list_diffx = function(ad, bd, s) {
-      var ad_new, b_deletes, b_inserts, diff, index, op, shift_l, shift_r, sindex, x;
+    jsondiff.prototype.transform_list_diff = function(ad, bd, s) {
+      var ad_new, b_deletes, b_inserts, diff, index, op, other_op, shift_l, shift_r, sindex, target_op, x;
+      console.log("xregular transform_list_diff");
       ad_new = {};
       b_inserts = [];
       b_deletes = [];
       for (index in bd) {
         if (!__hasProp.call(bd, index)) continue;
         op = bd[index];
+        index = parseInt(index);
         if (op['o'] === '+') b_inserts.push(index);
         if (op['o'] === '-') b_deletes.push(index);
       }
       for (index in ad) {
         if (!__hasProp.call(ad, index)) continue;
         op = ad[index];
-        shift_r = [
-          (function() {
-            var _i, _len, _results;
-            _results = [];
-            for (_i = 0, _len = b_inserts.length; _i < _len; _i++) {
-              x = b_inserts[_i];
-              if (x <= index) _results.push(x);
-            }
-            return _results;
-          })()
-        ].length;
-        shift_l = [
-          (function() {
-            var _i, _len, _results;
-            _results = [];
-            for (_i = 0, _len = b_deletes.length; _i < _len; _i++) {
-              x = b_deletes[_i];
-              if (x <= index) _results.push(x);
-            }
-            return _results;
-          })()
-        ].length;
+        index = parseInt(index);
+        shift_r = ((function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = b_inserts.length; _i < _len; _i++) {
+            x = b_inserts[_i];
+            if (x <= index) _results.push(x);
+          }
+          return _results;
+        })()).length;
+        shift_l = ((function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = b_deletes.length; _i < _len; _i++) {
+            x = b_deletes[_i];
+            if (x < index) _results.push(x);
+          }
+          return _results;
+        })()).length;
         index = index + shift_r - shift_l;
         sindex = String(index);
         ad_new[sindex] = op;
         if (index in bd) {
-          if (op['o'] === '+' && bd.index['o'] === '+') {
+          if (op['o'] === '+' && bd[index]['o'] === '+') {
             continue;
-          } else if (op['o'] === '-' && bd.index['o'] === '-') {
-            delete ad_new[sindex];
+          } else if (op['o'] === '-') {
+            if (bd[index]['o'] === '-') delete ad_new[sindex];
+          } else if (bd[index]['o'] === '-') {
+            if (op['o'] === !'+') {
+              ad_new[sindex] = {
+                'o': '+',
+                'v': this.apply_object_diff(s[sindex], op['v'])
+              };
+            }
           } else {
-            diff = this.transform_object_diff({
-              sindex: op
-            }, {
-              sindex: bd.index
-            }, s);
+            target_op = {};
+            target_op[sindex] = op;
+            other_op = {};
+            other_op[sindex] = bd[index];
+            diff = this.transform_object_diff(target_op, other_op, s);
             ad_new[sindex] = diff[sindex];
           }
         }
@@ -470,9 +476,8 @@
       return ad_new;
     };
 
-    jsondiff.prototype.transform_list_diff = function(ad, bd, s) {
+    jsondiff.prototype.transform_list_diff_dmp = function(ad, bd, s) {
       var a_patches, ab_text, b_patches, b_text, dmp_diffs, stext;
-      console.log("transform_list_diff(" + (JSON.stringify(ad)) + ", " + (JSON.stringify(bd)) + ", " + (JSON.stringify(s)) + ")");
       stext = this._serialize_to_text(s);
       a_patches = jsondiff.dmp.patch_make(stext, jsondiff.dmp.diff_fromDelta(stext, ad));
       b_patches = jsondiff.dmp.patch_make(stext, jsondiff.dmp.diff_fromDelta(stext, bd));
@@ -488,7 +493,6 @@
 
     jsondiff.prototype.transform_object_diff = function(ad, bd, s) {
       var a_patches, ab_text, ad_new, aop, b_patches, b_text, bop, dmp_diffs, dmp_patches, dmp_result, key, sk, _ref;
-      console.log("transform_object_diff(" + (JSON.stringify(ad)) + ", " + (JSON.stringify(bd)) + ", " + (JSON.stringify(s)) + ")");
       ad_new = this.deepCopy(ad);
       for (key in ad) {
         if (!__hasProp.call(ad, key)) continue;
