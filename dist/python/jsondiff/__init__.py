@@ -294,7 +294,7 @@ def diff(a, b):
     elif type(a) == bool:
         return {'o':'r', 'v': b}
     elif type(a) == list:
-        return {'o':'L', 'v':listdiff2(a,b)}
+        return {'o':'r', 'v': b}
     elif type(a) == dict:
         return {'o':'O', 'v':objdiff2(a,b)}
     elif type(a) in [str, unicode]:

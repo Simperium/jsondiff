@@ -14,10 +14,6 @@ all: ${DIST_DIR} ${JD_PY} ${JD_JS} min
 ${DIST_DIR}:
 	@@mkdir -p ${DIST_DIR}
 
-${JD_PY}: ${SRC_DIR}/jsondiff.py
-	@@mkdir -p ${DIST_DIR}/python/jsondiff
-	@@cp ${SRC_DIR}/jsondiff.py ${JD_PY}
-
 ${JD_JS}: ${SRC_DIR}/jsondiff.coffee
 	@@coffee -c ${SRC_DIR}/jsondiff.coffee
 	@@cp ${SRC_DIR}/jsondiff.js ${JD_JS}

@@ -230,7 +230,7 @@ class jsondiff
 #
 #     { '0' : {'o':'I', 'v':4},
 #       '1' : {'o':'I', 'v':-5} }
-  list_diff: (a, b) =>
+  list_diffx: (a, b) =>
     diffs = {}
     lena = a.length
     lenb = b.length
@@ -261,6 +261,31 @@ class jsondiff
 
     return diffs
 
+  list_diff: (a, b) =>
+    lena = a.length
+    lenb = b.length
+    atext = @_serialize_to_text a
+    btext = @_serialize_to_text b
+
+    diffs = jsondiff.dmp.diff_lineMode_ atext, btext
+    jsondiff.dmp.diff_cleanupEfficiency(diffs)
+    delta = jsondiff.dmp.diff_toDelta(diffs)
+    return delta
+
+  _serialize_to_text: (a) =>
+    s = ''
+    lena = a.length
+    for i in [0..lena-1]
+      s += "#{JSON.stringify a[i]}\n"
+    return s
+
+  # FIXME: elements may be strings and contain \n
+  _text_to_array: (s) =>
+    a = []
+    sa = s.split("\n")
+    a = (JSON.parse(x) for x in sa when x.length > 0)
+    return a
+
 # Compare two objects and generate a diff object to be applied to an object (dictionary).
   object_diff: (a, b) =>
     diffs = {}
@@ -274,7 +299,7 @@ class jsondiff
         # Object a has this key but object b doesn't, remove from a
         diffs[key] = {'o':'-'}
     for own key of b
-      if not (key of a)
+      if not (key of a) and b[key]?
         # Object b has this key but object a doesn't, add to a
         diffs[key] = {'o':'+', 'v':b[key]}
 
@@ -295,7 +320,6 @@ class jsondiff
 
     switch typea
       when 'boolean'  then return {'o': 'r', 'v': b}
-#      when 'number'   then return {'o': 'I', 'v': b-a}
       when 'number'   then return {'o': 'r', 'v': b}
       when 'array'    then return {'o': 'L', 'v': @list_diff a, b}
       when 'object'   then return {'o': 'O', 'v': @object_diff a, b}
@@ -312,7 +336,7 @@ class jsondiff
 
 # Applies a diff object (which consists of a map of keys to operations) to an array (`s`) and
 # returns a new list with the operations in `diffs` applied to it
-  apply_list_diff: (s, diffs) =>
+  apply_list_diffx: (s, diffs) =>
     patched = @deepCopy s
     indexes = []
     deleted = []
@@ -359,6 +383,14 @@ class jsondiff
 
     return patched
 
+  apply_list_diff: (s, delta) =>
+      ptext = @_serialize_to_text s
+
+      dmp_diffs = jsondiff.dmp.diff_fromDelta(ptext, delta)
+      dmp_patches = jsondiff.dmp.patch_make(ptext, dmp_diffs)
+      dmp_result = jsondiff.dmp.patch_apply dmp_patches, ptext
+
+      return @_text_to_array(dmp_result[0])
 
 # Applies a diff object (which consists of a map of keys to operations) to an object (`s`) and
 # returns a new object with the operations in `diffs` applied to it
@@ -430,7 +462,7 @@ class jsondiff
 
     return patched
 
-  transform_list_diff: (ad, bd, s) =>
+  transform_list_diffx: (ad, bd, s) =>
     ad_new = {}
     b_inserts = []
     b_deletes = []
@@ -455,7 +487,24 @@ class jsondiff
           ad_new[sindex] = diff[sindex]
     return ad_new
 
+  transform_list_diff: (ad, bd, s) =>
+    console.log("transform_list_diff(#{JSON.stringify(ad)}, #{JSON.stringify(bd)}, #{JSON.stringify(s)})");
+    stext = @_serialize_to_text s
+    a_patches = jsondiff.dmp.patch_make stext, jsondiff.dmp.diff_fromDelta stext, ad
+    b_patches = jsondiff.dmp.patch_make stext, jsondiff.dmp.diff_fromDelta stext, bd
+
+    b_text = (jsondiff.dmp.patch_apply b_patches, stext)[0]
+    ab_text = (jsondiff.dmp.patch_apply a_patches, b_text)[0]
+    if ab_text != b_text
+      dmp_diffs = jsondiff.dmp.diff_lineMode_ b_text, ab_text
+      if dmp_diffs.length > 2
+        jsondiff.dmp.diff_cleanupEfficiency dmp_diffs
+      if dmp_diffs.length > 0
+        return jsondiff.dmp.diff_toDelta dmp_diffs
+    return ""
+
   transform_object_diff: (ad, bd, s) =>
+    console.log("transform_object_diff(#{JSON.stringify(ad)}, #{JSON.stringify(bd)}, #{JSON.stringify(s)})");
     ad_new = @deepCopy ad
     for own key, aop of ad
       if not (key of bd) then continue
@@ -483,10 +532,12 @@ class jsondiff
           dmp_patches = jsondiff.dmp.patch_make sk, dmp_diffs
           dmp_result = jsondiff.dmp.patch_apply dmp_patches, sk
           ad_new[key]['v'] = dmp_result[0]
+        else
+          delete ad_new[key]
       else if aop['o'] is 'O' and bop['o'] is 'O'
         ad_new[key] = {'o':'O', 'v': @transform_object_diff aop['v'], bop['v'], sk}
       else if aop['o'] is 'L' and bop['o'] is 'L'
-        ad_new[key] = {'o':'O', 'v': @transform_list_diff aop['v'], bop['v'], sk}
+        ad_new[key] = {'o':'L', 'v': @transform_list_diff aop['v'], bop['v'], sk}
       else if aop['o'] is 'd' and bop['o'] is 'd'
         delete ad_new[key]
         a_patches = jsondiff.dmp.patch_make sk, jsondiff.dmp.diff_fromDelta sk, aop['v']
