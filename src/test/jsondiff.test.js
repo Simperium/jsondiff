@@ -15,10 +15,12 @@ $(function(){
                 break;
             case 'transform':
                 var orig = args[0];
-                var diffa = jd.diff(args[0], args[1])['v'];
-                var diffb = jd.diff(args[0], args[2])['v'];
-                var tdiff = jd.transform_object_diff(diffa, diffb, orig);
-                ok(jd.entries(tdiff) > 0, description);
+                var diffa = jd.diff(args[0], args[1], args[3]);
+                diffa = diffa['v'] ? diffa['v'] : {};
+                var diffb = jd.diff(args[0], args[2], args[3]);
+                diffb = diffb['v'] ? diffb['v'] : {};
+                var tdiff = jd.transform_object_diff(diffa, diffb, orig, args[3]);
+//                ok(jd.entries(tdiff) > 0, description);
 
                 method = jd.apply_object_diff;
                 args = [jd.apply_object_diff(orig, diffb), tdiff];

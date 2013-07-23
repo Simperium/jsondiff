@@ -230,7 +230,11 @@ class jsondiff
 #
 #     { '0' : {'o':'I', 'v':4},
 #       '1' : {'o':'I', 'v':-5} }
-  list_diff: (a, b) =>
+  list_diff: (a, b, policy) =>
+    if policy? and 'item' of policy
+      policy = policy['item']
+    else
+      policy = null
     diffs = {}
     lena = a.length
     lenb = b.length
@@ -251,7 +255,7 @@ class jsondiff
       if i < lena and i < lenb
         # If values aren't equal we set the value to be the output of the diff
         if not @equals a[i], b[i]
-          diffs[i+prefix_len] = @diff a[i], b[i]
+          diffs[i+prefix_len] = @diff a[i], b[i], policy
       else if i < lena
         # array b doesn't have this element so remove it
         diffs[i+prefix_len] = {'o':'-'}
@@ -261,7 +265,7 @@ class jsondiff
 
     return diffs
 
-  list_diff_dmp: (a, b) =>
+  list_diff_dmp: (a, b, policy) =>
     lena = a.length
     lenb = b.length
     atext = @_serialize_to_text a
@@ -287,14 +291,18 @@ class jsondiff
     return a
 
 # Compare two objects and generate a diff object to be applied to an object (dictionary).
-  object_diff: (a, b) =>
+  object_diff: (a, b, policy) =>
     diffs = {}
     if not a? or not b? then return {}
     for own key of a
+      if policy? and key of policy
+        policy = policy[key]
+      else
+        policy = null
       if key of b
-        # Both objects have the same key, if the values aren't equal, set the value to tbe the output of the diff
+        # Both objects have the same key, if the values aren't equal, set the value to be the output of the diff
         if not @equals a[key], b[key]
-          diffs[key] = @diff a[key], b[key]
+          diffs[key] = @diff a[key], b[key], policy
       else
         # Object a has this key but object b doesn't, remove from a
         diffs[key] = {'o':'-'}
@@ -311,9 +319,28 @@ class jsondiff
 # An operation object is
 #
 #     {'o':(operation type), 'v':(operation parameter value)}
-  diff: (a, b) =>
+  diff: (a, b, policy) =>
     if @equals a, b
       return {}
+    if policy? and 'item' of policy
+      policy = policy['item']
+
+    if policy? and 'otype' of policy
+      otype = policy['otype']
+      switch otype
+        when 'replace' then return {'o': 'r', 'v': b}
+        when 'list' then return {'o': 'L', 'v': @list_diff a, b, policy}
+        when 'list_dmp' then return {'o': 'dL', 'v': @list_diff_dmp a, b, policy}
+        when 'integer' then return {'o': 'I', 'v': b-a}
+        when 'string'
+          # Use diffmatchpatch here for comparing strings
+          diffs = jsondiff.dmp.diff_main a, b
+          if diffs.length > 2
+            jsondiff.dmp.diff_cleanupEfficiency diffs
+          if diffs.length > 0
+            return {'o': 'd', 'v': jsondiff.dmp.diff_toDelta diffs}
+
+    # defaults based on types
     typea = @typeOf a
     if typea != @typeOf b
       return {'o':'r', 'v':b }
@@ -321,8 +348,8 @@ class jsondiff
     switch typea
       when 'boolean'  then return {'o': 'r', 'v': b}
       when 'number'   then return {'o': 'r', 'v': b}
-      when 'array'    then return {'o': 'L', 'v': @list_diff a, b}
-      when 'object'   then return {'o': 'O', 'v': @object_diff a, b}
+      when 'array'    then return {'o': 'L', 'v': @list_diff a, b, policy}
+      when 'object'   then return {'o': 'O', 'v': @object_diff a, b, policy}
       when 'string'
         # Use diffmatchpatch here for comparing strings
         diffs = jsondiff.dmp.diff_main a, b
@@ -332,7 +359,6 @@ class jsondiff
           return {'o': 'd', 'v': jsondiff.dmp.diff_toDelta diffs}
 
     return {}
-
 
 # Applies a diff object (which consists of a map of keys to operations) to an array (`s`) and
 # returns a new list with the operations in `diffs` applied to it
@@ -354,10 +380,11 @@ class jsondiff
       shift = (x for x in deleted when x <= index).length
       s_index = index - shift
 
+
       switch op['o']
         # Insert new value at index
         when '+'
-          patched[s_index..s_index] = op['v']
+          patched[s_index..s_index-1] = op['v']
         # Delete value at index
         when '-'
           patched[s_index..s_index] = []
@@ -371,6 +398,9 @@ class jsondiff
         # List, apply the diff operations to the current array
         when 'L'
           patched[s_index] = @apply_list_diff patched[s_index], op['v']
+        # List, apply the diff operations to the current array
+        when 'dL'
+          patched[s_index] = @apply_list_diff_dmp patched[s_index], op['v']
         # Object, apply the diff operations to the current object
         when 'O'
           patched[s_index] = @apply_object_diff patched[s_index], op['v']
@@ -397,32 +427,10 @@ class jsondiff
   apply_object_diff: (s, diffs) =>
     patched = @deepCopy s
     for own key, op of diffs
-      switch op['o']
-        # Add new key/value
-        when '+'
-          patched[key] = op['v']
-        # Delete a key
-        when '-'
-          delete patched[key]
-        # Replace the value for key
-        when 'r'
-          patched[key] = op['v']
-        # Integer, add the difference to current value
-        when 'I'
-          patched[key] += op['v']
-        # List, apply the diff operations to the current array
-        when 'L'
-          patched[key] = @apply_list_diff patched[key], op['v']
-        # Object, apply the diff operations to the current object
-        when 'O'
-          patched[key] = @apply_object_diff patched[key], op['v']
-        # String, apply the patch using diffmatchpatch
-        when 'd'
-          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op['v']
-          dmp_patches = jsondiff.dmp.patch_make patched[key], dmp_diffs
-          dmp_result = jsondiff.dmp.patch_apply dmp_patches, patched[key]
-          patched[key] = dmp_result[0]
-
+      if op['o'] is '-'
+        delete patched[key]
+      else
+        patched[key] = @apply_diff patched[key], op
     return patched
 
 # Applies a diff object (which consists of a map of keys to operations) to an object (`s`) and
@@ -462,43 +470,89 @@ class jsondiff
 
     return patched
 
-  transform_list_diff: (ad, bd, s) =>
-    console.log("xregular transform_list_diff")
+  apply_diff: (a, op) =>
+    switch op['o']
+      when '+'
+        return op['v']
+      when '-'
+        return null
+      when 'r'
+        return op['v']
+      when 'I'
+        return a + op['v']
+      when 'L'
+        return @apply_list_diff a, op['v']
+      when 'dL'
+        return @apply_list_diff_dmp a, op['v']
+      when 'O'
+        return @apply_object_diff a, op['v']
+      when 'd'
+        dmp_diffs = jsondiff.dmp.diff_fromDelta a, op['v']
+        dmp_patches = jsondiff.dmp.patch_make a, dmp_diffs
+        dmp_result = jsondiff.dmp.patch_apply dmp_patches, a
+        return dmp_result[0]
+        #        dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op['v']
+        #        dmp_patches = jsondiff.dmp.patch_make patched[key], dmp_diffs
+        #        if key is field
+        #          patched[key] = @patch_apply_with_offsets dmp_patches, patched[key],
+        #              offsets
+        #        else
+        #          dmp_result = jsondiff.dmp.patch_apply dmp_patches, patched[key]
+        #          patched[key] = dmp_result[0]
+
+
+
+  transform_list_diff: (ad, bd, s, policy) =>
     ad_new = {}
     b_inserts = []
     b_deletes = []
+    if policy? and 'item' of policy
+      policy = policy['item']
+    else
+      policy = null
+
     for own index, op of bd
       index = parseInt(index)
       if op['o'] is '+' then b_inserts.push index
       if op['o'] is '-' then b_deletes.push index
+    last_index = 0
+    last_shift = 0
+
     for own index, op of ad
       index = parseInt(index)
-      shift_r = (x for x in b_inserts when x <= index).length
+      shift_r = (x for x in b_inserts when x < index).length
       shift_l = (x for x in b_deletes when x < index).length
 
-      index = index + shift_r - shift_l
-      sindex = String(index)
+      if last_index+1 is index
+        index = index + last_shift
+      else
+        index = index + shift_r - shift_l
+      last_index = index
+      last_shift = shift_r - shift_l
 
+      sindex = String(index)
       ad_new[sindex] = op
-      if index of bd
+      if sindex of bd
         if op['o'] is '+' and bd[index]['o'] is '+'
           continue
         else if op['o'] is '-'
           if bd[index]['o'] is '-'
             delete ad_new[sindex]
         else if bd[index]['o'] is '-'
+          if op['o'] is 'r'
+            ad_new[sindex] = {'o': '+', 'v': op['v']}
           if op['o'] is not '+'
-            ad_new[sindex] = {'o':'+', 'v': @apply_object_diff s[sindex], op['v'] }
+            ad_new[sindex] = {'o': '+', 'v': @apply_object_diff s[sindex], op['v'] }
         else
           target_op = {}
           target_op[sindex] = op
           other_op = {}
           other_op[sindex] = bd[index]
-          diff = @transform_object_diff(target_op, other_op, s)
+          diff = @transform_object_diff(target_op, other_op, s, policy)
           ad_new[sindex] = diff[sindex]
     return ad_new
 
-  transform_list_diff_dmp: (ad, bd, s) =>
+  transform_list_diff_dmp: (ad, bd, s, policy) =>
     stext = @_serialize_to_text s
     a_patches = jsondiff.dmp.patch_make stext, jsondiff.dmp.diff_fromDelta stext, ad
     b_patches = jsondiff.dmp.patch_make stext, jsondiff.dmp.diff_fromDelta stext, bd
@@ -513,11 +567,15 @@ class jsondiff
         return jsondiff.dmp.diff_toDelta dmp_diffs
     return ""
 
-  transform_object_diff: (ad, bd, s) =>
-#    console.log("transform_object_diff(#{JSON.stringify(ad)}, #{JSON.stringify(bd)}, #{JSON.stringify(s)})");
+  transform_object_diff: (ad, bd, s, policy) =>
     ad_new = @deepCopy ad
     for own key, aop of ad
       if not (key of bd) then continue
+
+      if policy? and key of policy
+        policy = policy[key]
+      else
+        policy = null
 
       sk = s[key]
       bop = bd[key]
@@ -526,28 +584,18 @@ class jsondiff
         if @equals aop['v'], bop['v']
           delete ad_new[key]
         else
-          ad_new[key] = @diff bop['v'], aop['v']
+          ad_new[key] = @diff bop['v'], aop['v'], policy
       else if aop['o'] is '-' and bop['o'] is '-'
         delete ad_new[key]
-      else if bop['o'] is '-' and aop['o'] in ['O', 'L', 'I', 'd']
+      else if bop['o'] is '-' and aop['o'] not in ['+', '-']
         ad_new[key] = {'o':'+'}
-        if aop['o'] is 'O'
-          ad_new[key]['v'] = @apply_object_diff sk, aop['v']
-        else if aop['o'] is 'L'
-          ad_new[key]['v'] = @apply_list_diff sk, aop['v']
-        else if aop['o'] is 'I'
-          ad_new[key]['v'] = sk + aop['v']
-        else if aop['o'] is 'd'
-          dmp_diffs = jsondiff.dmp.diff_fromDelta sk, aop['v']
-          dmp_patches = jsondiff.dmp.patch_make sk, dmp_diffs
-          dmp_result = jsondiff.dmp.patch_apply dmp_patches, sk
-          ad_new[key]['v'] = dmp_result[0]
-        else
-          delete ad_new[key]
+        ad_new[key]['v'] = @apply_diff sk, aop
       else if aop['o'] is 'O' and bop['o'] is 'O'
-        ad_new[key] = {'o':'O', 'v': @transform_object_diff aop['v'], bop['v'], sk}
+        ad_new[key] = {'o':'O', 'v': @transform_object_diff aop['v'], bop['v'], sk, policy}
       else if aop['o'] is 'L' and bop['o'] is 'L'
-        ad_new[key] = {'o':'L', 'v': @transform_list_diff aop['v'], bop['v'], sk}
+        ad_new[key] = {'o':'L', 'v': @transform_list_diff aop['v'], bop['v'], sk, policy}
+      else if aop['o'] is 'dL' and bop['o'] is 'dL'
+        ad_new[key] = {'o':'dL', 'v': @transform_list_diff_dmp aop['v'], bop['v'], sk, policy}
       else if aop['o'] is 'd' and bop['o'] is 'd'
         delete ad_new[key]
         a_patches = jsondiff.dmp.patch_make sk, jsondiff.dmp.diff_fromDelta sk, aop['v']
