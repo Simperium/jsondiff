@@ -572,8 +572,9 @@
         if (!__hasProp.call(ad, key)) continue;
         aop = ad[key];
         if (!(key in bd)) continue;
-        if ((policy != null) && key in policy) {
-          policy = policy[key];
+        if ((policy != null) && 'attributes' in policy) {
+          policy = policy['attributes'];
+          if ((policy != null) && key in policy) policy = policy[key];
         } else {
           policy = null;
         }

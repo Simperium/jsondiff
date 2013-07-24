@@ -274,7 +274,7 @@ def transform_list_diff(ad, bd, s, policy=None):
                 elif op['o'] not in ['+']:
                     ac[sindex] = {'o':'+', 'v': apply_object_diff(s[index], op['v'])}
             else:
-                ac[sindex] = transform_object({sindex:op}, {sindex:bd[sindex]}, s)[sindex]
+                ac[sindex] = transform_object_diff({sindex:op}, {sindex:bd[sindex]}, s)[sindex]
     return ac
 
 # diff a on S0 and diff b on S0
@@ -342,9 +342,9 @@ def transform_object_diff(a, b, s, policy=None):
 # a = operation to transform
 # diffs = list of operations
 # s = common object ancestor
-def transform(a, diffs, s):
+def transform(a, diffs, s, policy=None):
     for diff in diffs:
-        a = transform_object_diff(a, diff, s)
+        a = transform_object_diff(a, diff, s, policy)
         s = apply_diff(s, diff)
     return a
 

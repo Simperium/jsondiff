@@ -572,8 +572,10 @@ class jsondiff
     for own key, aop of ad
       if not (key of bd) then continue
 
-      if policy? and key of policy
-        policy = policy[key]
+      if policy? and 'attributes' of policy
+        policy = policy['attributes']
+        if policy? and key of policy
+          policy = policy[key]
       else
         policy = null
 
