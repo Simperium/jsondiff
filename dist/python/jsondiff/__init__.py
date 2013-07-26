@@ -153,7 +153,7 @@ def list_diff(a, b, policy=None):
                 c[k] = {'o':'-'}
             elif i < len(b) + sr and i < len(a):
                 if not equals(a[i], b[i-sr]):
-                    c[k] = diff(a[i], b[i-sr])
+                    c[k] = diff(a[i], b[i-sr], policy)
             elif i < len(b) + sr:
                 c[k] = {'o':'+', 'v':b[i-sr]}
             elif i < len(a):
@@ -165,7 +165,7 @@ def list_diff(a, b, policy=None):
         k = str(i+cp)
         if i < len(ca) and i < len(cb):
             if not equals(ca[i], cb[i]):
-                c[k] = diff(ca[i], cb[i])
+                c[k] = diff(ca[i], cb[i], policy)
         elif i < len(ca):
             c[k] = {'o':'-'}
         elif i < len(cb):
@@ -195,11 +195,16 @@ def object_equals(a, b):
 
 def object_diff(a, b, policy=None):
     c = {}
+
+    if policy and 'attributes' in policy:
+        policy = policy['attributes']
+
     for k,v in a.iteritems():
         if policy and k in policy:
             policy = policy[k]
         else:
             policy = None
+
         if k in b:
             if not equals(v, b[k]):
                 c[k] = diff(v, b[k], policy)
@@ -208,6 +213,7 @@ def object_diff(a, b, policy=None):
     for k,v in b.iteritems():
         if k not in a:
             c[k] = {'o':'+', 'v':v}
+
     return c
 
 def apply_object_diff(a, c):
@@ -281,9 +287,12 @@ def transform_list_diff(ad, bd, s, policy=None):
 # return a' where T(T(S0, b), a') == T(T(S0, a), b') # not really since DMP deltas will not satisfy this property
 def transform_object_diff(a, b, s, policy=None):
     ac = copy.deepcopy(a)
+
+    if policy and 'attributes' in policy:
+        policy = policy['attributes']
+
     for k, op in a.iteritems():
         if k in b:
-
             if policy and k in policy:
                 policy = policy[k]
             else:
@@ -352,8 +361,9 @@ def diff(a, b, policy=None):
     if equals(a,b):
         return {}
 
-    if policy and 'item' in policy:
-        policy = policy['item']
+    if policy and 'attributes' in policy:
+        policy = policy['attributes']
+
     if policy and 'otype' in policy:
         otype = policy['otype']
         if otype == 'replace':

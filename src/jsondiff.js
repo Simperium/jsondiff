@@ -216,6 +216,9 @@
     jsondiff.prototype.object_diff = function(a, b, policy) {
       var diffs, key;
       diffs = {};
+      if ((policy != null) && 'attributes' in policy) {
+        policy = policy['attributes'];
+      }
       if (!(a != null) || !(b != null)) return {};
       for (key in a) {
         if (!__hasProp.call(a, key)) continue;
@@ -249,7 +252,9 @@
     jsondiff.prototype.diff = function(a, b, policy) {
       var diffs, otype, typea;
       if (this.equals(a, b)) return {};
-      if ((policy != null) && 'item' in policy) policy = policy['item'];
+      if ((policy != null) && 'attributes' in policy) {
+        policy = policy['attributes'];
+      }
       if ((policy != null) && 'otype' in policy) {
         otype = policy['otype'];
         switch (otype) {
@@ -574,7 +579,11 @@
         if (!(key in bd)) continue;
         if ((policy != null) && 'attributes' in policy) {
           policy = policy['attributes'];
-          if ((policy != null) && key in policy) policy = policy[key];
+          if ((policy != null) && key in policy) {
+            policy = policy[key];
+          } else {
+            policy = null;
+          }
         } else {
           policy = null;
         }

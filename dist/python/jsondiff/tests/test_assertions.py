@@ -46,7 +46,7 @@ class AssertionsTests(unittest.TestCase):
                 print
                 print "\tdescription", description
                 print "\tgot", simplejson.dumps(got)
-                print "\texpected", simplejson.dumps(expected)
+                print "\texp", simplejson.dumps(expected)
             return equals(got, expected)
 #            self.assertTrue(equals(got, expected))
 

@@ -293,12 +293,17 @@ class jsondiff
 # Compare two objects and generate a diff object to be applied to an object (dictionary).
   object_diff: (a, b, policy) =>
     diffs = {}
+
+    if policy? and 'attributes' of policy
+      policy = policy['attributes']
+
     if not a? or not b? then return {}
     for own key of a
       if policy? and key of policy
         policy = policy[key]
       else
         policy = null
+
       if key of b
         # Both objects have the same key, if the values aren't equal, set the value to be the output of the diff
         if not @equals a[key], b[key]
@@ -322,8 +327,9 @@ class jsondiff
   diff: (a, b, policy) =>
     if @equals a, b
       return {}
-    if policy? and 'item' of policy
-      policy = policy['item']
+
+    if policy? and 'attributes' of policy
+      policy = policy['attributes']
 
     if policy? and 'otype' of policy
       otype = policy['otype']
@@ -569,6 +575,10 @@ class jsondiff
 
   transform_object_diff: (ad, bd, s, policy) =>
     ad_new = @deepCopy ad
+
+    if policy? and 'attributes' of policy
+      policy = policy['attributes']
+
     for own key, aop of ad
       if not (key of bd) then continue
 
@@ -576,6 +586,8 @@ class jsondiff
         policy = policy['attributes']
         if policy? and key of policy
           policy = policy[key]
+        else
+          policy = null
       else
         policy = null
 
