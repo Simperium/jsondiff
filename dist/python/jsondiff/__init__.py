@@ -309,7 +309,7 @@ def transform_object_diff(a, b, s, policy=None):
                 if equals(b[k]['v'], op['v']):
                     del ac[k]
                 else:
-                    ac[k] = diff(b[k]['v'], op['v'])
+                    ac[k] = diff(b[k]['v'], op['v'], policy)
             elif op['o'] == '-' and b[k]['o'] == '-':
                 del ac[k]
             elif b[k]['o'] == '-' and op['o'] in ['O', 'L', 'I', 'd']:
