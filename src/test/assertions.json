@@ -25,6 +25,21 @@
         [{"a":{"b":{"c":[{"d":1}]}}}, {"a":{"b":{"c":[{"d":2}]}}},
         {"a":{"attributes":{"b":{"attributes":{"c":{"item":{"attributes": {"d": {"otype": "integer"}}}}}}}}}],
         {"o": "O", "v": {"a": {"o": "O", "v": {"b": {"o": "O", "v": {"c": {"o" : "L", "v": {"0": {"o": "O", "v": {"d": {"o": "I", "v": 1}}}}}}}}}}}],
+    ["diff", "int, increment (embedded list->object mixed item diff)",
+        [{"a":{"b":{"c":[{"d":1}, 1, {"e":"y"}]}}}, {"a":{"b":{"c":[{"d":2}, 2, {"e":"x"}]}}},
+        {"a":{"attributes":{"b":{"attributes":{"c":
+            {"item":
+                {"attributes": {
+                    "d": {"otype": "integer"},
+                    "e": {"otype": "replace"}}
+                }
+            }}}}}}],
+        {"o": "O", "v": {"a": {"o": "O", "v": {"b": {"o": "O", "v": {"c":
+            {"o" : "L", "v": {
+                "0": {"o": "O", "v": {"d": {"o": "I", "v": 1}}},
+                "1": {"o": "r", "v": 2},
+                "2": {"o": "O", "v": {"e" : {"o": "r", "v": "x"}}}}
+            }}}}}}}],
     ["diff", "list, add element",
         [{"a":[1,2,3]}, {"a":[1,2,3,4]}], {"o": "O", "v": {"a": {"o":"L", "v":{"3":{"o":"+","v":4}}}}}],
     ["diff", "list, subtract element",
