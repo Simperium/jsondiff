@@ -201,13 +201,13 @@ def object_diff(a, b, policy=None):
 
     for k,v in a.iteritems():
         if policy and k in policy:
-            policy = policy[k]
+            sub_policy = policy[k]
         else:
-            policy = None
+            sub_policy = None
 
         if k in b:
             if not equals(v, b[k]):
-                c[k] = diff(v, b[k], policy)
+                c[k] = diff(v, b[k], sub_policy)
         else:
             c[k] = {'o':'-'}
     for k,v in b.iteritems():
@@ -245,7 +245,9 @@ def transform_list_diff(ad, bd, s, policy=None):
     b_inserts = []
     b_deletes = []
     if policy and 'item' in policy:
-        policy = policy['item']
+        sub_policy = policy['item']
+    else:
+        sub_policy = None
 
     for index, op in bd.iteritems():
         index = int(index)
@@ -280,7 +282,7 @@ def transform_list_diff(ad, bd, s, policy=None):
                 elif op['o'] not in ['+']:
                     ac[sindex] = {'o':'+', 'v': apply_object_diff(s[index], op['v'])}
             else:
-                ac[sindex] = transform_object_diff({sindex:op}, {sindex:bd[sindex]}, s)[sindex]
+                ac[sindex] = transform_object_diff({sindex:op}, {sindex:bd[sindex]}, s, sub_policy)[sindex]
     return ac
 
 # diff a on S0 and diff b on S0
@@ -294,9 +296,9 @@ def transform_object_diff(a, b, s, policy=None):
     for k, op in a.iteritems():
         if k in b:
             if policy and k in policy:
-                policy = policy[k]
+                sub_policy = policy[k]
             else:
-                policy = None
+                sub_policy = None
 
             sk = None
             if type(s) == list:
@@ -309,7 +311,7 @@ def transform_object_diff(a, b, s, policy=None):
                 if equals(b[k]['v'], op['v']):
                     del ac[k]
                 else:
-                    ac[k] = diff(b[k]['v'], op['v'], policy)
+                    ac[k] = diff(b[k]['v'], op['v'], sub_policy)
             elif op['o'] == '-' and b[k]['o'] == '-':
                 del ac[k]
             elif b[k]['o'] == '-' and op['o'] in ['O', 'L', 'I', 'd']:
@@ -326,11 +328,11 @@ def transform_object_diff(a, b, s, policy=None):
                     result = DMP.patch_apply(patches, sk)
                     ac[k]['v'] = result[0]
             elif op['o'] == 'O' and b[k]['o'] == 'O':
-                ac[k] = {'o':'O', 'v':transform_object_diff(op['v'], b[k]['v'], sk, policy)}
+                ac[k] = {'o':'O', 'v':transform_object_diff(op['v'], b[k]['v'], sk, sub_policy)}
             elif op['o'] == 'L' and b[k]['o'] == 'L':
-                ac[k] = {'o':'L', 'v':transform_list_diff(op['v'], b[k]['v'], sk, policy)}
+                ac[k] = {'o':'L', 'v':transform_list_diff(op['v'], b[k]['v'], sk, sub_policy)}
             elif op['o'] == 'dL' and b[k]['o'] == 'dL':
-                ac[k] = {'o':'dL', 'v':transform_list_diff_dmp(op['v'], b[k]['v'], sk, policy)}
+                ac[k] = {'o':'dL', 'v':transform_list_diff_dmp(op['v'], b[k]['v'], sk, sub_policy)}
             elif op['o'] == 'd' and b[k]['o'] == 'd':
                 del ac[k]
                 a_patches = DMP.patch_make(sk, DMP.diff_fromDelta(sk, op['v']))

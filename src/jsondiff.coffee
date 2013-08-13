@@ -300,14 +300,14 @@ class jsondiff
     if not a? or not b? then return {}
     for own key of a
       if policy? and key of policy
-        policy = policy[key]
+        sub_policy = policy[key]
       else
-        policy = null
+        sub_policy = null
 
       if key of b
         # Both objects have the same key, if the values aren't equal, set the value to be the output of the diff
         if not @equals a[key], b[key]
-          diffs[key] = @diff a[key], b[key], policy
+          diffs[key] = @diff a[key], b[key], sub_policy
       else
         # Object a has this key but object b doesn't, remove from a
         diffs[key] = {'o':'-'}
