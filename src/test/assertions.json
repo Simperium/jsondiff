@@ -48,6 +48,8 @@
         [{"a":[1,2,3]}, {"a":[1,2,3,4]}, {"a":{"otype":"list_dmp"}}], {"o": "O", "v": {"a": {"o":"dL", "v":"=6\t+4%0A"}}}],
     ["diff", "list dmp, subtract element",
         [{"a":[1,2,3,4]}, {"a":[1,2,3]}, {"a":{"otype":"list_dmp"}}], {"o": "O", "v": {"a": {"o":"dL", "v":"=6\t-2"}}}],
+    ["diff", "nested list, subtract element",
+        [{"a":[[1],[2,3]]}, {"a":[[1],[4]]}, {"a":{"otype":"list", "item":{"otype":"list", "item":{"otype": "integer"}}}}], {"o": "O", "v": {"a": {"o":"dL", "v":"=6\t-2"}}}],
     ["transform", "list, transform",
         [{"a":[1,2,3]}, {"a":[1,2,3,5]}, {"a":[1,2,3,4]}], {"a":[1,2,3,5,4]}],
     ["transform", "list, transform2",
