@@ -392,7 +392,7 @@ def diff(a, b, policy=None):
     elif type(a) == bool:
         return {'o':'r', 'v': b}
     elif type(a) == list:
-        return {'o':'L', 'v': list_diff(a, b, policy)}
+        return {'o':'r', 'v': b}
     elif type(a) == dict:
         return {'o':'O', 'v': object_diff(a, b, policy)}
     elif isinstance(a, basestring):

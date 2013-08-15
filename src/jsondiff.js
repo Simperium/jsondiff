@@ -309,8 +309,8 @@
           };
         case 'array':
           return {
-            'o': 'L',
-            'v': this.list_diff(a, b, policy)
+            'o': 'r',
+            'v': b
           };
         case 'object':
           return {
