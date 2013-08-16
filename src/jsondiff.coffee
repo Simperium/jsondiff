@@ -278,9 +278,8 @@ class jsondiff
 
   _serialize_to_text: (a) =>
     s = ''
-    lena = a.length
-    for i in [0..lena-1]
-      s += "#{JSON.stringify a[i]}\n"
+    for i in a
+      s += "#{JSON.stringify i}\n"
     return s
 
   # FIXME: elements may be strings and contain \n
