@@ -36,7 +36,7 @@ def equals(a, b):
         return a == b
 
 def serialize_to_text(a):
-    return ''.join([json.dumps(s)+'\n' for s in a])
+    return ''.join([json.dumps(s, separators=(',', ':'))+'\n' for s in a])
 
 def text_to_list(s):
     return [json.loads(e) for e in s.split('\n') if len(e)]
