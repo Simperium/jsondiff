@@ -68,10 +68,10 @@ def diff_fromDelta_ucs2(self, text1, delta):
                raise ValueError("Invalid number in diff_fromDelta: " + param)
             if n_ucs2 < 0:
                raise ValueError("Negative number in diff_fromDelta: " + param)
-            n = n_ucs2
-            while length_ucs2( text1[pointer : pointer + n] ) > n_ucs2:
+            n = 0
+            while length_ucs2( text1[pointer : pointer + n] ) < n_ucs2:
             # may also need to make sure no surrogate pair is split
-                n -= 1
+                n += 1
             text = text1[pointer : pointer + n]
             pointer += n
             if token[0] == "=":
@@ -82,7 +82,7 @@ def diff_fromDelta_ucs2(self, text1, delta):
             # Anything else is an error.
             raise ValueError("Invalid diff operation in diff_fromDelta: " +
                 token[0])
-    if pointer != length_ucs2(text1):
+    if pointer != len(text1):
         raise ValueError(
             "Delta length (%d) does not equal source text length (%d)." %
             (pointer, length_ucs2(text1)))
