@@ -60,22 +60,7 @@
     };
 
     jsondiff.prototype.deepCopy = function(obj) {
-      var i, out, _ref;
-      if (Object.prototype.toString.call(obj) === '[object Array]') {
-        out = [];
-        for (i = 0, _ref = obj.length; 0 <= _ref ? i < _ref : i > _ref; 0 <= _ref ? i++ : i--) {
-          out[i] = arguments.callee(obj[i]);
-        }
-        return out;
-      }
-      if (typeof obj === 'object') {
-        out = {};
-        for (i in obj) {
-          out[i] = arguments.callee(obj[i]);
-        }
-        return out;
-      }
-      return obj;
+      return JSON.parse(JSON.stringify(obj));
     };
 
     jsondiff.prototype.equals = function(a, b) {

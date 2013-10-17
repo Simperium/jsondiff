@@ -136,17 +136,7 @@ class jsondiff
 
   # Return a deep copy of the object
   deepCopy: (obj) =>
-    if Object::toString.call(obj) is '[object Array]'
-      out = []
-      for i in [0...obj.length]
-        out[i] = arguments.callee obj[i]
-      return out
-    if typeof obj is 'object'
-      out = {}
-      for i of obj
-        out[i] = arguments.callee obj[i]
-      return out
-    return obj
+    return JSON.parse(JSON.stringify(obj))
 
   # Deep equals comparison
   equals: (a, b) =>
