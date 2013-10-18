@@ -66,6 +66,8 @@ def diff_fromDelta_ucs2(self, text1, delta):
             if n_ucs2 < 0:
                raise ValueError("Negative number in diff_fromDelta: " + param)
             n = n_ucs2
+            if pointer + n > len(text1):
+                n = len(text1) - pointer
             while length_ucs2( text1[pointer : pointer + n] ) > n_ucs2:
             # may also need to make sure no surrogate pair is split
                 n -= 1

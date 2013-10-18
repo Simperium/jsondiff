@@ -6,6 +6,57 @@ class DifferTests(unittest.TestCase):
     def setUp(self):
         pass
 
+    def test_emoji(self):
+        # insert character after emoji
+        a = {"s" : u"\ud83d\udc7f"}
+        b = {"s" : u"\ud83d\udc7f#"}
+        expect = {"s" : {"o":"d", "v":"=2\t+#"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # insert character before emoji
+        a = {"s" : u"\ud83d\udc7f"}
+        b = {"s" : u"#\ud83d\udc7f"}
+        expect = {"s" : {"o":"d", "v":"+#\t=2"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # remove character after emoji
+        a = {"s" : u"\ud83d\udc7f#"}
+        b = {"s" : u"\ud83d\udc7f"}
+        expect = {"s" : {"o":"d", "v":"=2\t-1"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # remove character before emoji
+        a = {"s" : u"#\ud83d\udc7f"}
+        b = {"s" : u"\ud83d\udc7f"}
+        expect = {"s" : {"o":"d", "v":"-1\t=2"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # remove emoji
+        a = {"s" : u"#\ud83d\udc7f"}
+        b = {"s" : u"#"}
+        expect = {"s" : {"o":"d", "v":"=1\t-2"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # insert character before many emoji
+        a = {"s" : u"\ud83d\udc7fs"*5}
+        b = {"s" : "#" + u"\ud83d\udc7fs"*5}
+        expect = {"s" : {"o":"d", "v":"+#\t=15"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # insert character inbetween emoji
+        a = {"s" : u"\ud83d\udc7f"*2}
+        b = {"s" : u"\ud83d\udc7f#\ud83d\udc7f"}
+        expect = {"s" : {"o":"d", "v":"=2\t+#\t=2"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+
     def test_prefix(self):
         a = ['a', 'b', 'c']
         b = ['a', 'b', 'c', 'd']
