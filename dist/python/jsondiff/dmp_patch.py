@@ -181,11 +181,17 @@ class String_Offset_Override:
 
         return self.string[start:stop]
 
+class Diff_No_Split( Exception ):
+    pass
+
 dmp_diff_bisect = diff_match_patch.diff_bisect
 def diff_bisect( self, text1, text2, deadline ):
     text1o = String_Offset_Override( text1 )
     text2o = String_Offset_Override( text2 )
-    ret = dmp_diff_bisect( self, text1o, text2o, deadline )
+    try:
+        ret = dmp_diff_bisect( self, text1o, text2o, deadline )
+    except Diff_No_Split:
+        return [ ( self.DIFF_DELETE, text1 ), ( self.DIFF_INSERT, text2 ) ]
 
     if ret and 2 == len( ret ) and ret[0][0] == self.DIFF_DELETE and ret[1][0] == self.DIFF_INSERT and ret[0][1] == text1o and ret[1][1] == text2o:
         return [ ( self.DIFF_DELETE, text1 ), ( self.DIFF_INSERT, text2 ) ]
@@ -194,6 +200,10 @@ def diff_bisect( self, text1, text2, deadline ):
 
 dmp_diff_bisectSplit = diff_match_patch.diff_bisectSplit
 def diff_bisectSplit( self, text1, text2, x, y, deadline ):
+    # diff_match_patch.diff_bisect didn't see a way to split the texts up further
+    # Bail now to prevent recursion
+    if not x and not y:
+        raise Diff_No_Split
     return dmp_diff_bisectSplit( self, text1.string, text2.string, x, y, deadline )
 
 def diff_commonOverlap(self, text1, text2):
