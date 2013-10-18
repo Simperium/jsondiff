@@ -47,6 +47,7 @@ def diff_fromDelta_ucs2(self, text1, delta):
         delta = delta.encode("ascii")
     diffs = []
     pointer = 0  # Cursor in text1
+    pointer_ucs2 = 0
     tokens = delta.split("\t")
     for token in tokens:
         if token == "":
@@ -73,6 +74,7 @@ def diff_fromDelta_ucs2(self, text1, delta):
                 n -= 1
             text = text1[pointer : pointer + n]
             pointer += n
+            pointer_ucs2 += n_ucs2
             if token[0] == "=":
                 diffs.append((self.DIFF_EQUAL, text))
             else:
@@ -81,9 +83,9 @@ def diff_fromDelta_ucs2(self, text1, delta):
             # Anything else is an error.
             raise ValueError("Invalid diff operation in diff_fromDelta: " +
                 token[0])
-    if pointer != len(text1):
+    if pointer_ucs2 != length_ucs2(text1):
         raise ValueError(
             "Delta length (%d) does not equal source text length (%d)." %
-            (pointer, len(text1)))
+            (pointer_ucs2, length_ucs2(text1)))
     return diffs
 
