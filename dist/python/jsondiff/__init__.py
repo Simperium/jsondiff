@@ -13,10 +13,7 @@ import dmp_patch
 
 from diffmatchpatch import diff_match_patch
 
-if 1 == len( u'\U0001f4a9' ):
-    # monkey patch dmp to use our patched functions that use length_ucs2
-    diff_match_patch.diff_toDelta = dmp_patch.diff_toDelta_ucs2
-    diff_match_patch.diff_fromDelta = dmp_patch.diff_fromDelta_ucs2
+dmp_patch.monkey()
 
 DMP = diff_match_patch()
 
