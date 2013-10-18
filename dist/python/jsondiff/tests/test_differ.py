@@ -67,21 +67,6 @@ class DifferTests(unittest.TestCase):
         self.assertEqual(object_diff(a, b), expect)
         self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
 
-        # remove emoji
-        # surrogate pair
-        a = {"s" : u"#\ud83d\udc7f"}
-        b = {"s" : u"#"}
-        expect = {"s" : {"o":"d", "v":"=1\t-2"}}
-        self.assertEqual(object_diff(a, b), expect)
-        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
-
-        # real unicode code point
-        a = {"s" : u"#\U0001F47F"}
-        b = {"s" : u"#"}
-        expect = {"s" : {"o":"d", "v":"=1\t-2"}}
-        self.assertEqual(object_diff(a, b), expect)
-        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
-
         # insert character before many emoji
         # surrogate pair
         a = {"s" : u"\ud83d\udc7fs"*5}
@@ -112,6 +97,93 @@ class DifferTests(unittest.TestCase):
         self.assertEqual(object_diff(a, b), expect)
         self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
 
+
+        # insert emoji after character
+        # surrogate pair
+        a = {"s" : u"#"}
+        b = {"s" : u"#\ud83d\udc7f"}
+        expect = {"s" : {"o":"d", "v":"=1\t+%F0%9F%91%BF"}}
+        self.assertEqual(object_diff(a, b), expect)
+        b = {"s" : u"#\U0001F47F"}
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # real unicode code point
+        a = {"s" : u"#"}
+        b = {"s" : u"#\U0001F47F"}
+        expect = {"s" : {"o":"d", "v":"=1\t+%F0%9F%91%BF"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # insert emoji before character
+        # surrogate pair
+        a = {"s" : u"#"}
+        b = {"s" : u"\ud83d\udc7f#"}
+        expect = {"s" : {"o":"d", "v":"+%F0%9F%91%BF\t=1"}}
+        self.assertEqual(object_diff(a, b), expect)
+        b = {"s" : u"\U0001F47F#"}
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # real unicode code point
+        a = {"s" : u"#"}
+        b = {"s" : u"\U0001F47F#"}
+        expect = {"s" : {"o":"d", "v":"+%F0%9F%91%BF\t=1"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # remove emoji after character
+        # surrogate pair
+        a = {"s" : u"#\ud83d\udc7f"}
+        b = {"s" : u"#"}
+        expect = {"s" : {"o":"d", "v":"=1\t-2"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # real unicode code point
+        a = {"s" : u"#\U0001F47F"}
+        b = {"s" : u"#"}
+        expect = {"s" : {"o":"d", "v":"=1\t-2"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # remove emoji before character
+        # surrogate pair
+        a = {"s" : u"\ud83d\udc7f#"}
+        b = {"s" : u"#"}
+        expect = {"s" : {"o":"d", "v":"-2\t=1"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # real unicode code point
+        a = {"s" : u"\U0001F47F#"}
+        b = {"s" : u"#"}
+        expect = {"s" : {"o":"d", "v":"-2\t=1"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+
+        # insert emoji between emoji
+        # real unicode code point
+        a = {"s" : u"\U0001F47F\U0001F47F"}
+        b = {"s" : u"\U0001F47F\U0001F607\U0001F47F"}
+        expect = {"s" : {"o":"d", "v":"=2\t+%F0%9F%98%87\t=2"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # swap emoji with same leading surrogate
+        # real unicode code point
+        a = {"s" : u"@\U0001F600#"}
+        b = {"s" : u"@\U0001F601#"}
+        expect = {"s" : {"o":"d", "v":"=1\t-2\t+%F0%9F%98%81\t=1"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+
+        # swap emoji with same trailing surrogate
+        # real unicode code point
+        a = {"s" : u"@\U0001F234#"}
+        b = {"s" : u"@\U0001F634#"}
+        expect = {"s" : {"o":"d", "v":"=1\t-2\t+%F0%9F%98%B4\t=1"}}
+        self.assertEqual(object_diff(a, b), expect)
+        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
 
     def test_prefix(self):
         a = ['a', 'b', 'c']
