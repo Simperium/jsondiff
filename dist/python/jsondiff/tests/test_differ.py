@@ -103,9 +103,10 @@ class DifferTests(unittest.TestCase):
         a = {"s" : u"#"}
         b = {"s" : u"#\ud83d\udc7f"}
         expect = {"s" : {"o":"d", "v":"=1\t+%F0%9F%91%BF"}}
-        self.assertEqual(object_diff(a, b), expect)
-        b = {"s" : u"#\U0001F47F"}
-        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+        diff = object_diff(a, b)
+        self.assertEqual(diff, expect)
+        b['s'] = b['s'].encode( 'UTF-16' ).decode( 'UTF-16' )
+        self.assertTrue(object_equals(b, apply_object_diff(a, diff)))
 
         # real unicode code point
         a = {"s" : u"#"}
@@ -119,9 +120,10 @@ class DifferTests(unittest.TestCase):
         a = {"s" : u"#"}
         b = {"s" : u"\ud83d\udc7f#"}
         expect = {"s" : {"o":"d", "v":"+%F0%9F%91%BF\t=1"}}
-        self.assertEqual(object_diff(a, b), expect)
-        b = {"s" : u"\U0001F47F#"}
-        self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
+        diff = object_diff(a, b)
+        self.assertEqual(diff, expect)
+        b['s'] = b['s'].encode( 'UTF-16' ).decode( 'UTF-16' )
+        self.assertTrue(object_equals(b, apply_object_diff(a, diff)))
 
         # real unicode code point
         a = {"s" : u"#"}
@@ -162,6 +164,17 @@ class DifferTests(unittest.TestCase):
 
 
         # insert emoji between emoji
+        # surrogate pair
+        a = {"s" : u"\ud83d\udc7f\ud83d\udc7f"}
+        b = {"s" : u"\ud83d\udc7f\ud83d\ude07\ud83d\udc7f"}
+        expect = {"s" : {"o":"d", "v":"=2\t+%F0%9F%98%87\t=2"}}
+        diff = object_diff(a, b)
+        self.assertEqual(diff, expect)
+        applied = apply_object_diff(a, diff)
+        b['s'] = b['s'].encode( 'UTF-16' ).decode( 'UTF-16' )
+        applied['s'] = applied['s'].encode( 'UTF-16' ).decode( 'UTF-16' )
+        self.assertTrue(object_equals(b, applied))
+
         # real unicode code point
         a = {"s" : u"\U0001F47F\U0001F47F"}
         b = {"s" : u"\U0001F47F\U0001F607\U0001F47F"}
@@ -170,6 +183,17 @@ class DifferTests(unittest.TestCase):
         self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
 
         # swap emoji with same leading surrogate
+        # surrogate pair
+        a = {"s" : u"@\ud83d\ude00#"}
+        b = {"s" : u"@\ud83d\ude01#"}
+        expect = {"s" : {"o":"d", "v":"=1\t-2\t+%F0%9F%98%81\t=1"}}
+        diff = object_diff(a, b)
+        self.assertEqual(diff, expect)
+        applied = apply_object_diff(a, diff)
+        b['s'] = b['s'].encode( 'UTF-16' ).decode( 'UTF-16' )
+        applied['s'] = applied['s'].encode( 'UTF-16' ).decode( 'UTF-16' )
+        self.assertTrue(object_equals(b, applied))
+
         # real unicode code point
         a = {"s" : u"@\U0001F600#"}
         b = {"s" : u"@\U0001F601#"}
@@ -178,6 +202,17 @@ class DifferTests(unittest.TestCase):
         self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
 
         # swap emoji with same trailing surrogate
+        # surrogate pair
+        a = {"s" : u"@\ud83c\ude34#"}
+        b = {"s" : u"@\ud83d\ude34#"}
+        expect = {"s" : {"o":"d", "v":"=1\t-2\t+%F0%9F%98%B4\t=1"}}
+        diff = object_diff(a, b)
+        self.assertEqual(diff, expect)
+        applied = apply_object_diff(a, diff)
+        b['s'] = b['s'].encode( 'UTF-16' ).decode( 'UTF-16' )
+        applied['s'] = applied['s'].encode( 'UTF-16' ).decode( 'UTF-16' )
+        self.assertTrue(object_equals(b, applied))
+
         # real unicode code point
         a = {"s" : u"@\U0001F234#"}
         b = {"s" : u"@\U0001F634#"}
