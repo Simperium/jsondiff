@@ -86,7 +86,6 @@ def diff_fromDelta_ucs2(self, text1, delta):
             raise ValueError("Invalid diff operation in diff_fromDelta: " +
                 token[0])
     if pointer_ucs2 != length_ucs2(text1):
-#    if pointer != len(text1):
         raise ValueError(
             "Delta length (%d) does not equal source text length (%d)." %
             (pointer_ucs2, length_ucs2(text1)))
