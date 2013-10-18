@@ -1,10 +1,7 @@
-import re
 import urllib
 
-sp_utf16be = re.compile( '[\xd8-\xdb][\x00-\xff][\xdc-\xdf][\x00-\xff]' )
-
 def length_ucs2( string ):
-    return len( string ) + len( sp_utf16be.findall( string.encode( 'UTF-16BE' ) ) )
+    return len( string.encode( 'UTF-16LE' ) ) / 2
 
 def diff_toDelta_ucs2(self, diffs):
     """Crush the diff into an encoded string which describes the operations
@@ -68,10 +65,10 @@ def diff_fromDelta_ucs2(self, text1, delta):
                raise ValueError("Invalid number in diff_fromDelta: " + param)
             if n_ucs2 < 0:
                raise ValueError("Negative number in diff_fromDelta: " + param)
-            n = 0
-            while length_ucs2( text1[pointer : pointer + n] ) < n_ucs2:
+            n = n_ucs2
+            while length_ucs2( text1[pointer : pointer + n] ) > n_ucs2:
             # may also need to make sure no surrogate pair is split
-                n += 1
+                n -= 1
             text = text1[pointer : pointer + n]
             pointer += n
             if token[0] == "=":
