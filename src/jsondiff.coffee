@@ -110,7 +110,8 @@
 
 #### Main documentation
 class jsondiff
-  @dmp = new diff_match_patch()
+  constructor: =>
+    @dmp = new diff_match_patch()
 
   #### Helper functions
 
@@ -261,9 +262,9 @@ class jsondiff
     atext = @_serialize_to_text a
     btext = @_serialize_to_text b
 
-    diffs = jsondiff.dmp.diff_lineMode_ atext, btext
-    jsondiff.dmp.diff_cleanupEfficiency(diffs)
-    delta = jsondiff.dmp.diff_toDelta(diffs)
+    diffs = @dmp.diff_lineMode_ atext, btext
+    @dmp.diff_cleanupEfficiency(diffs)
+    delta = @dmp.diff_toDelta(diffs)
     return delta
 
   _serialize_to_text: (a) =>
@@ -329,11 +330,11 @@ class jsondiff
         when 'integer' then return {'o': 'I', 'v': b-a}
         when 'string'
           # Use diffmatchpatch here for comparing strings
-          diffs = jsondiff.dmp.diff_main a, b
+          diffs = @dmp.diff_main a, b
           if diffs.length > 2
-            jsondiff.dmp.diff_cleanupEfficiency diffs
+            @dmp.diff_cleanupEfficiency diffs
           if diffs.length > 0
-            return {'o': 'd', 'v': jsondiff.dmp.diff_toDelta diffs}
+            return {'o': 'd', 'v': @dmp.diff_toDelta diffs}
 
     # defaults based on types
     typea = @typeOf a
@@ -347,11 +348,11 @@ class jsondiff
       when 'object'   then return {'o': 'O', 'v': @object_diff a, b, policy}
       when 'string'
         # Use diffmatchpatch here for comparing strings
-        diffs = jsondiff.dmp.diff_main a, b
+        diffs = @dmp.diff_main a, b
         if diffs.length > 2
-          jsondiff.dmp.diff_cleanupEfficiency diffs
+          @dmp.diff_cleanupEfficiency diffs
         if diffs.length > 0
-          return {'o': 'd', 'v': jsondiff.dmp.diff_toDelta diffs}
+          return {'o': 'd', 'v': @dmp.diff_toDelta diffs}
 
     return {}
 
@@ -401,9 +402,9 @@ class jsondiff
           patched[s_index] = @apply_object_diff patched[s_index], op['v']
         # String, apply the patch using diffmatchpatch
         when 'd'
-          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[s_index], op['v']
-          dmp_patches = jsondiff.dmp.patch_make patched[s_index], dmp_diffs
-          dmp_result = jsondiff.dmp.patch_apply dmp_patches, patched[s_index]
+          dmp_diffs = @dmp.diff_fromDelta patched[s_index], op['v']
+          dmp_patches = @dmp.patch_make patched[s_index], dmp_diffs
+          dmp_result = @dmp.patch_apply dmp_patches, patched[s_index]
           patched[s_index] = dmp_result[0]
 
     return patched
@@ -411,9 +412,9 @@ class jsondiff
   apply_list_diff_dmp: (s, delta) =>
       ptext = @_serialize_to_text s
 
-      dmp_diffs = jsondiff.dmp.diff_fromDelta(ptext, delta)
-      dmp_patches = jsondiff.dmp.patch_make(ptext, dmp_diffs)
-      dmp_result = jsondiff.dmp.patch_apply dmp_patches, ptext
+      dmp_diffs = @dmp.diff_fromDelta(ptext, delta)
+      dmp_patches = @dmp.patch_make(ptext, dmp_diffs)
+      dmp_result = @dmp.patch_apply dmp_patches, ptext
 
       return @_text_to_array(dmp_result[0])
 
@@ -454,13 +455,13 @@ class jsondiff
           patched[key] = @apply_object_diff patched[key], op['v']
         # String, apply the patch using diffmatchpatch
         when 'd'
-          dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op['v']
-          dmp_patches = jsondiff.dmp.patch_make patched[key], dmp_diffs
+          dmp_diffs = @dmp.diff_fromDelta patched[key], op['v']
+          dmp_patches = @dmp.patch_make patched[key], dmp_diffs
           if key is field
             patched[key] = @patch_apply_with_offsets dmp_patches, patched[key],
                 offsets
           else
-            dmp_result = jsondiff.dmp.patch_apply dmp_patches, patched[key]
+            dmp_result = @dmp.patch_apply dmp_patches, patched[key]
             patched[key] = dmp_result[0]
 
     return patched
@@ -482,17 +483,17 @@ class jsondiff
       when 'O'
         return @apply_object_diff a, op['v']
       when 'd'
-        dmp_diffs = jsondiff.dmp.diff_fromDelta a, op['v']
-        dmp_patches = jsondiff.dmp.patch_make a, dmp_diffs
-        dmp_result = jsondiff.dmp.patch_apply dmp_patches, a
+        dmp_diffs = @dmp.diff_fromDelta a, op['v']
+        dmp_patches = @dmp.patch_make a, dmp_diffs
+        dmp_result = @dmp.patch_apply dmp_patches, a
         return dmp_result[0]
-        #        dmp_diffs = jsondiff.dmp.diff_fromDelta patched[key], op['v']
-        #        dmp_patches = jsondiff.dmp.patch_make patched[key], dmp_diffs
+        #        dmp_diffs = @dmp.diff_fromDelta patched[key], op['v']
+        #        dmp_patches = @dmp.patch_make patched[key], dmp_diffs
         #        if key is field
         #          patched[key] = @patch_apply_with_offsets dmp_patches, patched[key],
         #              offsets
         #        else
-        #          dmp_result = jsondiff.dmp.patch_apply dmp_patches, patched[key]
+        #          dmp_result = @dmp.patch_apply dmp_patches, patched[key]
         #          patched[key] = dmp_result[0]
 
 
@@ -549,17 +550,17 @@ class jsondiff
 
   transform_list_diff_dmp: (ad, bd, s, policy) =>
     stext = @_serialize_to_text s
-    a_patches = jsondiff.dmp.patch_make stext, jsondiff.dmp.diff_fromDelta stext, ad
-    b_patches = jsondiff.dmp.patch_make stext, jsondiff.dmp.diff_fromDelta stext, bd
+    a_patches = @dmp.patch_make stext, @dmp.diff_fromDelta stext, ad
+    b_patches = @dmp.patch_make stext, @dmp.diff_fromDelta stext, bd
 
-    b_text = (jsondiff.dmp.patch_apply b_patches, stext)[0]
-    ab_text = (jsondiff.dmp.patch_apply a_patches, b_text)[0]
+    b_text = (@dmp.patch_apply b_patches, stext)[0]
+    ab_text = (@dmp.patch_apply a_patches, b_text)[0]
     if ab_text != b_text
-      dmp_diffs = jsondiff.dmp.diff_lineMode_ b_text, ab_text
+      dmp_diffs = @dmp.diff_lineMode_ b_text, ab_text
       if dmp_diffs.length > 2
-        jsondiff.dmp.diff_cleanupEfficiency dmp_diffs
+        @dmp.diff_cleanupEfficiency dmp_diffs
       if dmp_diffs.length > 0
-        return jsondiff.dmp.diff_toDelta dmp_diffs
+        return @dmp.diff_toDelta dmp_diffs
     return ""
 
   transform_object_diff: (ad, bd, s, policy) =>
@@ -601,16 +602,16 @@ class jsondiff
         ad_new[key] = {'o':'dL', 'v': @transform_list_diff_dmp aop['v'], bop['v'], sk, policy}
       else if aop['o'] is 'd' and bop['o'] is 'd'
         delete ad_new[key]
-        a_patches = jsondiff.dmp.patch_make sk, jsondiff.dmp.diff_fromDelta sk, aop['v']
-        b_patches = jsondiff.dmp.patch_make sk, jsondiff.dmp.diff_fromDelta sk, bop['v']
-        b_text = (jsondiff.dmp.patch_apply b_patches, sk)[0]
-        ab_text = (jsondiff.dmp.patch_apply a_patches, b_text)[0]
+        a_patches = @dmp.patch_make sk, @dmp.diff_fromDelta sk, aop['v']
+        b_patches = @dmp.patch_make sk, @dmp.diff_fromDelta sk, bop['v']
+        b_text = (@dmp.patch_apply b_patches, sk)[0]
+        ab_text = (@dmp.patch_apply a_patches, b_text)[0]
         if ab_text != b_text
-          dmp_diffs = jsondiff.dmp.diff_main b_text, ab_text
+          dmp_diffs = @dmp.diff_main b_text, ab_text
           if dmp_diffs.length > 2
-            jsondiff.dmp.diff_cleanupEfficiency dmp_diffs
+            @dmp.diff_cleanupEfficiency dmp_diffs
           if dmp_diffs.length > 0
-            ad_new[key] = {'o':'d', 'v':jsondiff.dmp.diff_toDelta dmp_diffs}
+            ad_new[key] = {'o':'d', 'v':@dmp.diff_toDelta dmp_diffs}
 
       return ad_new
 
@@ -625,11 +626,11 @@ class jsondiff
     }
 
     // Deep copy the patches so that no changes are made to originals.
-    patches = jsondiff.dmp.patch_deepCopy(patches);
-    var nullPadding = jsondiff.dmp.patch_addPadding(patches);
+    patches = this.dmp.patch_deepCopy(patches);
+    var nullPadding = this.dmp.patch_addPadding(patches);
     text = nullPadding + text + nullPadding;
 
-    jsondiff.dmp.patch_splitMax(patches);
+    this.dmp.patch_splitMax(patches);
     // delta keeps track of the offset between the expected and actual location
     // of the previous patch.  If there are patches expected at positions 10 and
     // 20, but the first patch was found at 12, delta is 2 and the second patch
@@ -637,25 +638,25 @@ class jsondiff
     var delta = 0;
     for (var x = 0; x < patches.length; x++) {
       var expected_loc = patches[x].start2 + delta;
-      var text1 = jsondiff.dmp.diff_text1(patches[x].diffs);
+      var text1 = this.dmp.diff_text1(patches[x].diffs);
       var start_loc;
       var end_loc = -1;
-      if (text1.length > jsondiff.dmp.Match_MaxBits) {
+      if (text1.length > this.dmp.Match_MaxBits) {
         // patch_splitMax will only provide an oversized pattern in the case of
         // a monster delete.
-        start_loc = jsondiff.dmp.match_main(text,
-            text1.substring(0, jsondiff.dmp.Match_MaxBits), expected_loc);
+        start_loc = this.dmp.match_main(text,
+            text1.substring(0, this.dmp.Match_MaxBits), expected_loc);
         if (start_loc != -1) {
-          end_loc = jsondiff.dmp.match_main(text,
-              text1.substring(text1.length - jsondiff.dmp.Match_MaxBits),
-              expected_loc + text1.length - jsondiff.dmp.Match_MaxBits);
+          end_loc = this.dmp.match_main(text,
+              text1.substring(text1.length - this.dmp.Match_MaxBits),
+              expected_loc + text1.length - this.dmp.Match_MaxBits);
           if (end_loc == -1 || start_loc >= end_loc) {
             // Can't find valid trailing context.  Drop this patch.
             start_loc = -1;
           }
         }
       } else {
-        start_loc = jsondiff.dmp.match_main(text, text1, expected_loc);
+        start_loc = this.dmp.match_main(text, text1, expected_loc);
       }
       if (start_loc == -1) {
         // No match found.  :(
@@ -678,13 +679,13 @@ class jsondiff
         if (end_loc == -1) {
           text2 = text.substring(start_loc, start_loc + text1.length);
         } else {
-          text2 = text.substring(start_loc, end_loc + jsondiff.dmp.Match_MaxBits);
+          text2 = text.substring(start_loc, end_loc + this.dmp.Match_MaxBits);
         }
         // Run a diff to get a framework of equivalent indices.
-        var diffs = jsondiff.dmp.diff_main(text1, text2, false);
-        if (text1.length > jsondiff.dmp.Match_MaxBits &&
-            jsondiff.dmp.diff_levenshtein(diffs) / text1.length >
-            jsondiff.dmp.Patch_DeleteThreshold) {
+        var diffs = this.dmp.diff_main(text1, text2, false);
+        if (text1.length > this.dmp.Match_MaxBits &&
+            this.dmp.diff_levenshtein(diffs) / text1.length >
+            this.dmp.Patch_DeleteThreshold) {
           // The end points match, but the content is unacceptably bad.
           /*
           if (mobwrite.debug) {
@@ -696,10 +697,10 @@ class jsondiff
           var index2;
           for (var y = 0; y < patches[x].diffs.length; y++) {
             var mod = patches[x].diffs[y];
-            if (mod[0] !== DIFF_EQUAL) {
-              index2 = jsondiff.dmp.diff_xIndex(diffs, index1);
+            if (mod[0] !== this.dmp.DIFF_EQUAL) {
+              index2 = this.dmp.diff_xIndex(diffs, index1);
             }
-            if (mod[0] === DIFF_INSERT) {  // Insertion
+            if (mod[0] === this.dmp.DIFF_INSERT) {  // Insertion
               text = text.substring(0, start_loc + index2) + mod[1] +
                      text.substring(start_loc + index2);
               for (var i = 0; i < offsets.length; i++) {
@@ -707,9 +708,9 @@ class jsondiff
                   offsets[i] += mod[1].length;
                 }
               }
-            } else if (mod[0] === DIFF_DELETE) {  // Deletion
+            } else if (mod[0] === this.dmp.DIFF_DELETE) {  // Deletion
               var del_start = start_loc + index2;
-              var del_end = start_loc + jsondiff.dmp.diff_xIndex(diffs,
+              var del_end = start_loc + this.dmp.diff_xIndex(diffs,
                   index1 + mod[1].length);
               text = text.substring(0, del_start) + text.substring(del_end);
               for (var i = 0; i < offsets.length; i++) {
@@ -722,7 +723,7 @@ class jsondiff
                 }
               }
             }
-            if (mod[0] !== DIFF_DELETE) {
+            if (mod[0] !== this.dmp.DIFF_DELETE) {
               index1 += mod[1].length;
             }
           }

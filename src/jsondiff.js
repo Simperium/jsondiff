@@ -28,10 +28,8 @@
       this.equals = __bind(this.equals, this);
       this.deepCopy = __bind(this.deepCopy, this);
       this.typeOf = __bind(this.typeOf, this);
-      this.entries = __bind(this.entries, this);
+      this.entries = __bind(this.entries, this);      this.dmp = new diff_match_patch();
     }
-
-    jsondiff.dmp = new diff_match_patch();
 
     jsondiff.prototype.entries = function(obj) {
       var key, n, value;
@@ -166,9 +164,9 @@
       lenb = b.length;
       atext = this._serialize_to_text(a);
       btext = this._serialize_to_text(b);
-      diffs = jsondiff.dmp.diff_lineMode_(atext, btext);
-      jsondiff.dmp.diff_cleanupEfficiency(diffs);
-      delta = jsondiff.dmp.diff_toDelta(diffs);
+      diffs = this.dmp.diff_lineMode_(atext, btext);
+      this.dmp.diff_cleanupEfficiency(diffs);
+      delta = this.dmp.diff_toDelta(diffs);
       return delta;
     };
 
@@ -264,12 +262,12 @@
               'v': b - a
             };
           case 'string':
-            diffs = jsondiff.dmp.diff_main(a, b);
-            if (diffs.length > 2) jsondiff.dmp.diff_cleanupEfficiency(diffs);
+            diffs = this.dmp.diff_main(a, b);
+            if (diffs.length > 2) this.dmp.diff_cleanupEfficiency(diffs);
             if (diffs.length > 0) {
               return {
                 'o': 'd',
-                'v': jsondiff.dmp.diff_toDelta(diffs)
+                'v': this.dmp.diff_toDelta(diffs)
               };
             }
         }
@@ -303,12 +301,12 @@
             'v': this.object_diff(a, b, policy)
           };
         case 'string':
-          diffs = jsondiff.dmp.diff_main(a, b);
-          if (diffs.length > 2) jsondiff.dmp.diff_cleanupEfficiency(diffs);
+          diffs = this.dmp.diff_main(a, b);
+          if (diffs.length > 2) this.dmp.diff_cleanupEfficiency(diffs);
           if (diffs.length > 0) {
             return {
               'o': 'd',
-              'v': jsondiff.dmp.diff_toDelta(diffs)
+              'v': this.dmp.diff_toDelta(diffs)
             };
           }
       }
@@ -362,9 +360,9 @@
             patched[s_index] = this.apply_object_diff(patched[s_index], op['v']);
             break;
           case 'd':
-            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[s_index], op['v']);
-            dmp_patches = jsondiff.dmp.patch_make(patched[s_index], dmp_diffs);
-            dmp_result = jsondiff.dmp.patch_apply(dmp_patches, patched[s_index]);
+            dmp_diffs = this.dmp.diff_fromDelta(patched[s_index], op['v']);
+            dmp_patches = this.dmp.patch_make(patched[s_index], dmp_diffs);
+            dmp_result = this.dmp.patch_apply(dmp_patches, patched[s_index]);
             patched[s_index] = dmp_result[0];
         }
       }
@@ -374,9 +372,9 @@
     jsondiff.prototype.apply_list_diff_dmp = function(s, delta) {
       var dmp_diffs, dmp_patches, dmp_result, ptext;
       ptext = this._serialize_to_text(s);
-      dmp_diffs = jsondiff.dmp.diff_fromDelta(ptext, delta);
-      dmp_patches = jsondiff.dmp.patch_make(ptext, dmp_diffs);
-      dmp_result = jsondiff.dmp.patch_apply(dmp_patches, ptext);
+      dmp_diffs = this.dmp.diff_fromDelta(ptext, delta);
+      dmp_patches = this.dmp.patch_make(ptext, dmp_diffs);
+      dmp_result = this.dmp.patch_apply(dmp_patches, ptext);
       return this._text_to_array(dmp_result[0]);
     };
 
@@ -421,12 +419,12 @@
             patched[key] = this.apply_object_diff(patched[key], op['v']);
             break;
           case 'd':
-            dmp_diffs = jsondiff.dmp.diff_fromDelta(patched[key], op['v']);
-            dmp_patches = jsondiff.dmp.patch_make(patched[key], dmp_diffs);
+            dmp_diffs = this.dmp.diff_fromDelta(patched[key], op['v']);
+            dmp_patches = this.dmp.patch_make(patched[key], dmp_diffs);
             if (key === field) {
               patched[key] = this.patch_apply_with_offsets(dmp_patches, patched[key], offsets);
             } else {
-              dmp_result = jsondiff.dmp.patch_apply(dmp_patches, patched[key]);
+              dmp_result = this.dmp.patch_apply(dmp_patches, patched[key]);
               patched[key] = dmp_result[0];
             }
         }
@@ -452,9 +450,9 @@
         case 'O':
           return this.apply_object_diff(a, op['v']);
         case 'd':
-          dmp_diffs = jsondiff.dmp.diff_fromDelta(a, op['v']);
-          dmp_patches = jsondiff.dmp.patch_make(a, dmp_diffs);
-          dmp_result = jsondiff.dmp.patch_apply(dmp_patches, a);
+          dmp_diffs = this.dmp.diff_fromDelta(a, op['v']);
+          dmp_patches = this.dmp.patch_make(a, dmp_diffs);
+          dmp_result = this.dmp.patch_apply(dmp_patches, a);
           return dmp_result[0];
       }
     };
@@ -543,14 +541,14 @@
     jsondiff.prototype.transform_list_diff_dmp = function(ad, bd, s, policy) {
       var a_patches, ab_text, b_patches, b_text, dmp_diffs, stext;
       stext = this._serialize_to_text(s);
-      a_patches = jsondiff.dmp.patch_make(stext, jsondiff.dmp.diff_fromDelta(stext, ad));
-      b_patches = jsondiff.dmp.patch_make(stext, jsondiff.dmp.diff_fromDelta(stext, bd));
-      b_text = (jsondiff.dmp.patch_apply(b_patches, stext))[0];
-      ab_text = (jsondiff.dmp.patch_apply(a_patches, b_text))[0];
+      a_patches = this.dmp.patch_make(stext, this.dmp.diff_fromDelta(stext, ad));
+      b_patches = this.dmp.patch_make(stext, this.dmp.diff_fromDelta(stext, bd));
+      b_text = (this.dmp.patch_apply(b_patches, stext))[0];
+      ab_text = (this.dmp.patch_apply(a_patches, b_text))[0];
       if (ab_text !== b_text) {
-        dmp_diffs = jsondiff.dmp.diff_lineMode_(b_text, ab_text);
-        if (dmp_diffs.length > 2) jsondiff.dmp.diff_cleanupEfficiency(dmp_diffs);
-        if (dmp_diffs.length > 0) return jsondiff.dmp.diff_toDelta(dmp_diffs);
+        dmp_diffs = this.dmp.diff_lineMode_(b_text, ab_text);
+        if (dmp_diffs.length > 2) this.dmp.diff_cleanupEfficiency(dmp_diffs);
+        if (dmp_diffs.length > 0) return this.dmp.diff_toDelta(dmp_diffs);
       }
       return "";
     };
@@ -607,19 +605,17 @@
           };
         } else if (aop['o'] === 'd' && bop['o'] === 'd') {
           delete ad_new[key];
-          a_patches = jsondiff.dmp.patch_make(sk, jsondiff.dmp.diff_fromDelta(sk, aop['v']));
-          b_patches = jsondiff.dmp.patch_make(sk, jsondiff.dmp.diff_fromDelta(sk, bop['v']));
-          b_text = (jsondiff.dmp.patch_apply(b_patches, sk))[0];
-          ab_text = (jsondiff.dmp.patch_apply(a_patches, b_text))[0];
+          a_patches = this.dmp.patch_make(sk, this.dmp.diff_fromDelta(sk, aop['v']));
+          b_patches = this.dmp.patch_make(sk, this.dmp.diff_fromDelta(sk, bop['v']));
+          b_text = (this.dmp.patch_apply(b_patches, sk))[0];
+          ab_text = (this.dmp.patch_apply(a_patches, b_text))[0];
           if (ab_text !== b_text) {
-            dmp_diffs = jsondiff.dmp.diff_main(b_text, ab_text);
-            if (dmp_diffs.length > 2) {
-              jsondiff.dmp.diff_cleanupEfficiency(dmp_diffs);
-            }
+            dmp_diffs = this.dmp.diff_main(b_text, ab_text);
+            if (dmp_diffs.length > 2) this.dmp.diff_cleanupEfficiency(dmp_diffs);
             if (dmp_diffs.length > 0) {
               ad_new[key] = {
                 'o': 'd',
-                'v': jsondiff.dmp.diff_toDelta(dmp_diffs)
+                'v': this.dmp.diff_toDelta(dmp_diffs)
               };
             }
           }
@@ -636,11 +632,11 @@
     }
 
     // Deep copy the patches so that no changes are made to originals.
-    patches = jsondiff.dmp.patch_deepCopy(patches);
-    var nullPadding = jsondiff.dmp.patch_addPadding(patches);
+    patches = this.dmp.patch_deepCopy(patches);
+    var nullPadding = this.dmp.patch_addPadding(patches);
     text = nullPadding + text + nullPadding;
 
-    jsondiff.dmp.patch_splitMax(patches);
+    this.dmp.patch_splitMax(patches);
     // delta keeps track of the offset between the expected and actual location
     // of the previous patch.  If there are patches expected at positions 10 and
     // 20, but the first patch was found at 12, delta is 2 and the second patch
@@ -648,25 +644,25 @@
     var delta = 0;
     for (var x = 0; x < patches.length; x++) {
       var expected_loc = patches[x].start2 + delta;
-      var text1 = jsondiff.dmp.diff_text1(patches[x].diffs);
+      var text1 = this.dmp.diff_text1(patches[x].diffs);
       var start_loc;
       var end_loc = -1;
-      if (text1.length > jsondiff.dmp.Match_MaxBits) {
+      if (text1.length > this.dmp.Match_MaxBits) {
         // patch_splitMax will only provide an oversized pattern in the case of
         // a monster delete.
-        start_loc = jsondiff.dmp.match_main(text,
-            text1.substring(0, jsondiff.dmp.Match_MaxBits), expected_loc);
+        start_loc = this.dmp.match_main(text,
+            text1.substring(0, this.dmp.Match_MaxBits), expected_loc);
         if (start_loc != -1) {
-          end_loc = jsondiff.dmp.match_main(text,
-              text1.substring(text1.length - jsondiff.dmp.Match_MaxBits),
-              expected_loc + text1.length - jsondiff.dmp.Match_MaxBits);
+          end_loc = this.dmp.match_main(text,
+              text1.substring(text1.length - this.dmp.Match_MaxBits),
+              expected_loc + text1.length - this.dmp.Match_MaxBits);
           if (end_loc == -1 || start_loc >= end_loc) {
             // Can't find valid trailing context.  Drop this patch.
             start_loc = -1;
           }
         }
       } else {
-        start_loc = jsondiff.dmp.match_main(text, text1, expected_loc);
+        start_loc = this.dmp.match_main(text, text1, expected_loc);
       }
       if (start_loc == -1) {
         // No match found.  :(
@@ -689,13 +685,13 @@
         if (end_loc == -1) {
           text2 = text.substring(start_loc, start_loc + text1.length);
         } else {
-          text2 = text.substring(start_loc, end_loc + jsondiff.dmp.Match_MaxBits);
+          text2 = text.substring(start_loc, end_loc + this.dmp.Match_MaxBits);
         }
         // Run a diff to get a framework of equivalent indices.
-        var diffs = jsondiff.dmp.diff_main(text1, text2, false);
-        if (text1.length > jsondiff.dmp.Match_MaxBits &&
-            jsondiff.dmp.diff_levenshtein(diffs) / text1.length >
-            jsondiff.dmp.Patch_DeleteThreshold) {
+        var diffs = this.dmp.diff_main(text1, text2, false);
+        if (text1.length > this.dmp.Match_MaxBits &&
+            this.dmp.diff_levenshtein(diffs) / text1.length >
+            this.dmp.Patch_DeleteThreshold) {
           // The end points match, but the content is unacceptably bad.
           /*
           if (mobwrite.debug) {
@@ -707,10 +703,10 @@
           var index2;
           for (var y = 0; y < patches[x].diffs.length; y++) {
             var mod = patches[x].diffs[y];
-            if (mod[0] !== DIFF_EQUAL) {
-              index2 = jsondiff.dmp.diff_xIndex(diffs, index1);
+            if (mod[0] !== this.dmp.DIFF_EQUAL) {
+              index2 = this.dmp.diff_xIndex(diffs, index1);
             }
-            if (mod[0] === DIFF_INSERT) {  // Insertion
+            if (mod[0] === this.dmp.DIFF_INSERT) {  // Insertion
               text = text.substring(0, start_loc + index2) + mod[1] +
                      text.substring(start_loc + index2);
               for (var i = 0; i < offsets.length; i++) {
@@ -718,9 +714,9 @@
                   offsets[i] += mod[1].length;
                 }
               }
-            } else if (mod[0] === DIFF_DELETE) {  // Deletion
+            } else if (mod[0] === this.dmp.DIFF_DELETE) {  // Deletion
               var del_start = start_loc + index2;
-              var del_end = start_loc + jsondiff.dmp.diff_xIndex(diffs,
+              var del_end = start_loc + this.dmp.diff_xIndex(diffs,
                   index1 + mod[1].length);
               text = text.substring(0, del_start) + text.substring(del_end);
               for (var i = 0; i < offsets.length; i++) {
@@ -733,7 +729,7 @@
                 }
               }
             }
-            if (mod[0] !== DIFF_DELETE) {
+            if (mod[0] !== this.dmp.DIFF_DELETE) {
               index1 += mod[1].length;
             }
           }
