@@ -110,7 +110,7 @@
 
 #### Main documentation
 class jsondiff
-  constructor: =>
+  constructor: ->
     @dmp = new diff_match_patch()
 
   #### Helper functions
