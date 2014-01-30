@@ -342,12 +342,15 @@ def transform_object_diff(a, b, s, policy=None):
                 b_patches = DMP.patch_make(sk, DMP.diff_fromDelta(sk, b[k]['v']))
                 b_text = DMP.patch_apply(b_patches, sk)[0]
                 ab_text = DMP.patch_apply(a_patches, b_text)[0]
-                diffs = DMP.diff_main(b_text, ab_text)
-                if len(diffs) > 2:
-                    DMP.diff_cleanupEfficiency(diffs)
-                if len(diffs) > 0:
-                    delta = DMP.diff_toDelta(diffs)
-                    ac[k] = {'o':'d', 'v':delta}
+
+                ac[k] = diff(b_text, ab_text, policy=sub_policy)
+            elif op['o'] == 'd' and b[k]['o'] == 'r':
+                del ac[k]
+                a_patches = DMP.patch_make(sk, DMP.diff_fromDelta(sk, op['v']))
+                b_text = b[k]['v']
+                ab_text = DMP.patch_apply(a_patches, sk)[0]
+
+                ac[k] = diff(b_text, ab_text, policy=sub_policy)
         else:
             # nothing to transform
             pass
