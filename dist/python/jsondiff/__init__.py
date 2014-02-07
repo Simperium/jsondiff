@@ -17,6 +17,14 @@ dmp_patch.monkey()
 
 DMP = diff_match_patch()
 
+OTYPE_MAP = {
+    'replace'   : [ '+', '-', 'r' ],
+    'list'      : [ '+', '-', 'L' ],
+    'list_dmp'  : [ '+', '-', 'dL' ],
+    'integer'   : [ '+', '-', 'I' ],
+    'string'    : [ '+', '-', 'd' ],
+    }
+
 def same_type(a, b):
     if isinstance(a, basestring) and isinstance(b, basestring):
         return True
