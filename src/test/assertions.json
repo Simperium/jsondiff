@@ -75,5 +75,7 @@
     ["transform", "list, transform6",
         [{"a":[1,2,3,4]}, {"a":[1,6,7,2,3,4]}, {"a":[1,5,2,3,4]}, {"a":{"otype":"list"}}], {"a":[1,6,7,5,2,3,4]}],
     ["transform", "list, transform6 (dmp)",
-        [{"a":[1,2,3,4]}, {"a":[1,6,7,2,3,4]}, {"a":[1,5,2,3,4]}, {"a":{"otype":"list_dmp"}}], {"a":[1,5,6,7,2,3,4]}]
+        [{"a":[1,2,3,4]}, {"a":[1,6,7,2,3,4]}, {"a":[1,5,2,3,4]}, {"a":{"otype":"list_dmp"}}], {"a":[1,5,6,7,2,3,4]}],
+    ["apply_offsets", "regular dmp diff, applied with patch_apply_with_offsets",
+        [{"a": "this is some text"}, {"a": "this is another text"}], {"a": "this is another text"}]
 ]

@@ -25,6 +25,11 @@ $(function(){
                 method = jd.apply_object_diff;
                 args = [jd.apply_object_diff(orig, diffb), tdiff];
                 break;
+            case 'apply_offsets':
+                var diff = jd.diff.apply(jd, args);
+                method = jd.apply_object_diff_with_offsets;
+                args = [args[0], diff['v'], 'a', {}];
+                break;
         }
 
         var want = method.apply(jd, args);
