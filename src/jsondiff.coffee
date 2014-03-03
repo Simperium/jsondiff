@@ -619,6 +619,7 @@ class jsondiff
 
       return ad_new
 
+  # patch function from google-mobwrite project: https://code.google.com/p/google-mobwrite/
   patch_apply_with_offsets: (patches, text, offsets) =>
     if patches.length == 0
         return text
