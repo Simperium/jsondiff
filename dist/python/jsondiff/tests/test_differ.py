@@ -301,6 +301,14 @@ class DifferTests(unittest.TestCase):
         b = {'blah':{'hi':'there'}, 'num':-10, 'new':{'list':['a', 'b', 'c']}}
         self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
 
+    def test_none_diffs(self):
+        a = {'a': 1}
+
+        diff_a_None = diff(a, None)
+        diff_None_a = diff(None, a)
+
+        self.assertTrue(object_equals(a, apply_object_diff( apply_object_diff(a, diff_a_None['v']), diff_None_a['v'] ) ) )
+
 
 if __name__ == '__main__':
     unittest.main()

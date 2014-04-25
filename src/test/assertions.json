@@ -1,4 +1,8 @@
 [
+    ["diff", "blank original obj",
+        [null, {"a":"b"}], {"o": "O", "v": {"a": {"o": "+", "v": "b"}}}],
+    ["diff", "blank target obj",
+        [{"a":"b"}, null], {"o": "O", "v": {"a": {"o": "-"}}}],
     ["diff", "object, change key string",
         [{"a":"b"}, {"a":"c"}], {"o": "O", "v": {"a": {"o": "d", "v": "-1\t+c"}}}],
     ["diff", "object, change key string to int",

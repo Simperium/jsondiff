@@ -20,11 +20,15 @@ class AssertionsTests(unittest.TestCase):
             description = method + ': ' + description
             print
             print "Running", description, method
-            method = {
+            methods = {
                 'diff': diff,
                 'apply_diff': apply_diff,
                 'transform': transform_object_diff
-            }[method]
+            }
+            if method in methods:
+                method = methods[method]
+            else:
+                return True
 
             if method is transform_object_diff:
                 if len(args) == 3:

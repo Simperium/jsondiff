@@ -371,6 +371,11 @@ def transform(a, diffs, s, policy=None):
     return a
 
 def diff(a, b, policy=None):
+    if a is None:
+        a = {}
+    if b is None:
+        b = {}
+
     if equals(a,b):
         return {}
 
@@ -424,6 +429,8 @@ def apply_diff(a, ops):
         return apply_object_diff(a, ops)
     elif type(a) == list:
         return apply_list_diff(a, ops)
+    elif a is None:
+        return apply_object_diff({}, ops)
 
 class differ:
     def __init__(self):
