@@ -301,6 +301,24 @@ class DifferTests(unittest.TestCase):
         b = {'blah':{'hi':'there'}, 'num':-10, 'new':{'list':['a', 'b', 'c']}}
         self.assertTrue(object_equals(b, apply_object_diff(a, object_diff(a, b))))
 
+    def test_bad_transform(self):
+        o = {'log' : 'Original Captains Log'}
+        a = {'log' : 'Local Captains Log'}
+        b = {'log' : 'Remote Captains Log'}
+
+        a_diff = diff(o, a)['v']
+        b_diff = diff(o, b)['v']
+
+        a_prime_diff = transform_object_diff(a_diff, b_diff, o)
+
+        ob = apply_object_diff(o, b_diff)
+
+        self.assertTrue(object_equals(ob, b))
+
+        oba = apply_object_diff(ob, a_prime_diff)
+
+        self.assertFalse(object_equals(oba, ob))
+        self.assertTrue(object_equals(oba, a))
 
 if __name__ == '__main__':
     unittest.main()
