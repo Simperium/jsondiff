@@ -348,8 +348,12 @@ def transform_object_diff(a, b, s, policy=None):
                 del ac[k]
                 a_patches = DMP.patch_make(sk, DMP.diff_fromDelta(sk, op['v']))
                 b_patches = DMP.patch_make(sk, DMP.diff_fromDelta(sk, b[k]['v']))
-                b_text = DMP.patch_apply(b_patches, sk)[0]
-                ab_text = DMP.patch_apply(a_patches, b_text)[0]
+                b_text, b_applied = DMP.patch_apply(b_patches, sk)
+                ab_text, a_applied = DMP.patch_apply(a_patches, b_text)
+
+                if False in a_applied or False in b_applied:
+                    ab_text, a_applied = DMP.patch_apply(a_patches, sk)
+
                 diffs = DMP.diff_main(b_text, ab_text)
                 if len(diffs) > 2:
                     DMP.diff_cleanupEfficiency(diffs)
